@@ -1,0 +1,12 @@
+{
+  "name": "@repo/config",
+  "version": "0.1.0",
+  "private": true,
+  "files": ["eslint.js", "typescript.json"],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2"
+  }
+}
