@@ -1,0 +1,25 @@
+{
+  "name": "remindrop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered bookmark management with daily email digests",
+  "author": "oh84 <100363393+oh84@users.noreply.github.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.25.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean && rm -rf node_modules .turbo"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3"
+  }
+}

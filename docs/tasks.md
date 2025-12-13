@@ -23,11 +23,11 @@
   ```
 - [ ] データベース接続確認（Task 1.3で実施）
 
-### Task 1.1: モノレポ初期化
-- [ ] pnpm workspaceセットアップ
-- [ ] Turborepo設定
-- [ ] ルートpackage.json作成
-- [ ] .gitignore設定
+### Task 1.1: モノレポ初期化 ✅
+- [x] pnpm workspaceセットアップ
+- [x] Turborepo設定
+- [x] ルートpackage.json作成
+- [x] .gitignore設定
 
 ### Task 1.2: 共有パッケージのセットアップ
 - [ ] packages/types 作成
