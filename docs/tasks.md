@@ -29,10 +29,10 @@
 - [x] ルートpackage.json作成
 - [x] .gitignore設定
 
-### Task 1.2: 共有パッケージのセットアップ
-- [ ] packages/types 作成
-- [ ] packages/config 作成（ESLint, TypeScript）
-- [ ] packages/utils 作成
+### Task 1.2: 共有パッケージのセットアップ ✅
+- [x] packages/types 作成
+- [x] packages/config 作成（ESLint, TypeScript）
+- [x] packages/utils 作成
 
 ### Task 1.3: データベースセットアップ
 - [ ] Drizzle ORM セットアップ
