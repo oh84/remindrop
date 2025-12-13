@@ -34,11 +34,11 @@
 - [x] packages/config 作成（ESLint, TypeScript）
 - [x] packages/utils 作成
 
-### Task 1.3: データベースセットアップ
-- [ ] Drizzle ORM セットアップ
-- [ ] packages/db 作成
-- [ ] ローカルPostgreSQL接続確認
-- [ ] 環境変数設定（DATABASE_URL）
+### Task 1.3: データベースセットアップ ✅
+- [x] Drizzle ORM セットアップ
+- [x] packages/db 作成
+- [x] ローカルPostgreSQL接続確認
+- [x] 環境変数設定（DATABASE_URL）
 
 **注:** AWS RDS構築はPhase 3（デプロイ準備時）に実施
 
