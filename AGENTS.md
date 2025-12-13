@@ -676,18 +676,16 @@ Than:
 
 ### Branch Strategy
 
-**Remindrop uses Git Flow with simplified branch structure**
+**Remindrop uses a simplified feature branch workflow**
 
 #### Branch Types
 
 ```
 main
-  ├── dev (default branch for development)
-  │   ├── feat/bookmark-crud
-  │   ├── feat/ai-summarization
-  │   ├── fix/search-pagination
-  │   └── refactor/api-structure
-  └── (direct hotfixes only)
+  ├── feat/bookmark-crud
+  ├── feat/ai-summarization
+  ├── fix/search-pagination
+  └── refactor/api-structure
 ```
 
 #### Branch Naming Convention
@@ -727,20 +725,17 @@ main
 - ✅ Refactoring
 - ✅ Anything that takes > 1 commit
 
-**Work directly on dev ONLY for:**
-- ❌ Never! Always use branches
-
 **Work directly on main ONLY for:**
-- ❌ Never! Always PR from dev
+- ❌ Never! Always use feature branches
 
 #### Branch Workflow
 
 **1. Starting a New Task**
 
 ```bash
-# Always start from latest dev
-git checkout dev
-git pull origin dev
+# Always start from latest main
+git checkout main
+git pull origin main
 
 # Create feature branch
 git checkout -b feat/bookmark-crud
@@ -766,15 +761,15 @@ git push origin feat/bookmark-crud
 **3. Keeping Branch Updated**
 
 ```bash
-# Regularly sync with dev
-git checkout dev
-git pull origin dev
+# Regularly sync with main
+git checkout main
+git pull origin main
 git checkout feat/bookmark-crud
-git merge dev
+git merge main
 
 # Or use rebase (preferred for cleaner history)
 git checkout feat/bookmark-crud
-git rebase dev
+git rebase main
 ```
 
 **4. Completing a Feature**
@@ -783,10 +778,10 @@ git rebase dev
 # Final push
 git push origin feat/bookmark-crud
 
-# Create PR: feat/bookmark-crud → dev
+# Create PR: feat/bookmark-crud → main
 # After PR approval and merge, delete branch
-git checkout dev
-git pull origin dev
+git checkout main
+git pull origin main
 git branch -d feat/bookmark-crud
 ```
 
@@ -799,7 +794,7 @@ git checkout -b feat/bookmark-crud
 → git push
 
 Day 2:
-git pull origin dev (sync)
+git pull origin main (sync)
 → 2 commits (UI components)
 → git push
 
@@ -807,7 +802,7 @@ Day 3:
 → 1 commit (tests)
 → git push
 → Create PR
-→ Merge to dev
+→ Merge to main
 → Delete branch
 ```
 
@@ -882,10 +877,10 @@ Task 5.1 "ブラウザ拡張機能"
    1. Push final commits:
       git push origin feat/bookmark-crud
    
-   2. Create PR: feat/bookmark-crud → dev
+   2. Create PR: feat/bookmark-crud → main
    
    3. After merge, clean up:
-      git checkout dev
+      git checkout main
       git pull
       git branch -d feat/bookmark-crud"
    ```
@@ -896,15 +891,9 @@ Task 5.1 "ブラウザ拡張機能"
 
 ```
 main branch:
-- Require PR for all changes
-- Require 1 approval (or 0 for solo project)
-- Require status checks to pass
-- No direct pushes
-
-dev branch:
-- Require PR for features
-- Allow direct pushes for hotfixes (solo project)
-- Require status checks to pass
+- Require PR for all changes (optional for solo project)
+- Require status checks to pass (when available)
+- No direct pushes (good practice)
 ```
 
 #### Hotfix Workflow
@@ -919,15 +908,12 @@ git checkout -b fix/critical-bug
 # Fix and commit
 git commit -m "fix: resolve critical bug"
 
-# Merge to main
+# Push and create PR (or merge directly if urgent)
+git push origin fix/critical-bug
+
+# After merge
 git checkout main
-git merge fix/critical-bug
-
-# Also merge to dev
-git checkout dev
-git merge fix/critical-bug
-
-# Delete branch
+git pull origin main
 git branch -d fix/critical-bug
 ```
 
@@ -962,7 +948,7 @@ feat/oauth-integration
 |-----------|---------|
 | Start new feature | `git checkout -b feat/feature-name` |
 | Start bug fix | `git checkout -b fix/bug-name` |
-| Sync with dev | `git checkout dev && git pull && git checkout - && git merge dev` |
+| Sync with main | `git checkout main && git pull && git checkout - && git merge main` |
 | Push to remote | `git push origin branch-name` |
 | Delete local branch | `git branch -d branch-name` |
 | Delete remote branch | `git push origin --delete branch-name` |
@@ -1047,7 +1033,6 @@ test: add bookmark creation tests
 ### Branch Strategy
 
 - `main`: Production-ready code
-- `dev`: Development branch
 - Feature branches: `feat/bookmark-tags`, `fix/search-bug`
 
 ---
