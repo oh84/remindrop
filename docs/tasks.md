@@ -11,17 +11,17 @@
 
 ## Phase 1: 基盤構築
 
-### Task 1.0: ローカル開発環境セットアップ
-- [ ] Docker PostgreSQL起動
+### Task 1.0: ローカル開発環境セットアップ ✅
+- [x] Docker Compose設定ファイル作成
+- [x] .env.example作成
+- [x] .env.local作成
+- [x] .gitignore設定
+- [x] Docker Compose起動確認
   ```bash
-  docker run --name remindrop-postgres \
-    -e POSTGRES_PASSWORD=postgres \
-    -e POSTGRES_DB=remindrop \
-    -p 5432:5432 \
-    -d postgres:15
+  docker compose up -d
+  docker compose ps
   ```
-- [ ] .env.local作成（.env.exampleからコピー）
-- [ ] データベース接続確認
+- [ ] データベース接続確認（Task 1.3で実施）
 
 ### Task 1.1: モノレポ初期化
 - [ ] pnpm workspaceセットアップ

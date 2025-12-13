@@ -54,26 +54,22 @@ remindrop/
 
 - Node.js 24+
 - pnpm 10+
-- PostgreSQL
-- AWSアカウント
-- Anthropic APIキー
+- Docker & Docker Compose
+- AWSアカウント（Phase 3以降）
+- Anthropic APIキー（Phase 4以降）
 
 ### セットアップ
 
 ```bash
-# PostgreSQLの起動（Docker）
-docker run --name remindrop-postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=remindrop \
-  -p 5432:5432 \
-  -d postgres:15
+# 環境変数の設定
+cp .env.example .env              # Docker Compose用
+cp .env.local.example .env.local  # Next.js用（Phase 1.4以降）
+
+# PostgreSQLの起動（Docker Compose）
+docker compose up -d
 
 # 依存関係のインストール
 pnpm install
-
-# 環境変数の設定
-cp .env.example .env.local
-# .env.localに実際の値を入力
 
 # データベースマイグレーション
 pnpm db:migrate
