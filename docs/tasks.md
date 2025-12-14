@@ -49,13 +49,16 @@
 - [x] ディレクトリ構造作成（Bulletproof React）
 - [x] 開発サーバー起動確認 (http://localhost:3000)
 
-### Task 1.5: Hono APIセットアップ
-- [ ] apps/api 作成
-- [ ] Hono セットアップ
-- [ ] ローカルサーバー設定（@hono/node-server）
-- [ ] http://localhost:3001 で起動確認
-- [ ] ディレクトリ構造作成
-- [ ] 基本的なルート作成（health check）
+### Task 1.5: Hono APIセットアップ ✅
+- [x] apps/api 作成
+- [x] Hono セットアップ
+- [x] @hono/zod-openapi セットアップ
+- [x] @hono/node-server セットアップ
+- [x] http://localhost:3001 で起動確認
+- [x] ディレクトリ構造作成（routes, middleware）
+- [x] Health check エンドポイント実装
+- [x] OpenAPI 仕様書生成（/api/openapi.json）
+- [x] Swagger UI セットアップ（/api/docs）
 
 **注:** AWS Lambda設定・デプロイはPhase 3以降
 
