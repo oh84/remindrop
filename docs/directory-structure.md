@@ -439,18 +439,54 @@ app.get('/api/docs', swaggerUI({ url: '/api/openapi.json' }));
 
 ### 6.1 packages/ui
 
+**shadcn/ui + Tailwind CSS v4**を使用した共有UIコンポーネントライブラリ。
+
 ```
 packages/ui/
 ├── src/
-│   ├── components/             # UIコンポーネント
-│   │   ├── button.tsx
-│   │   ├── input.tsx
-│   │   ├── card.tsx
+│   ├── components/             # shadcn/ui コンポーネント
+│   │   ├── button.tsx          # @repo/ui/components/button
+│   │   ├── input.tsx           # @repo/ui/components/input
+│   │   ├── card.tsx            # @repo/ui/components/card
 │   │   ├── dialog.tsx
-│   │   └── index.ts
+│   │   ├── label.tsx
+│   │   ├── separator.tsx
+│   │   └── badge.tsx
 │   ├── hooks/                  # UI関連hooks
 │   │   ├── use-toast.ts
 │   │   └── index.ts
+│   ├── lib/                    # ユーティリティ
+│   │   ├── utils.ts            # @repo/ui/lib/utils (cn関数など)
+│   │   └── index.ts
+│   └── styles/
+│       └── globals.css         # @repo/ui/globals.css (Tailwind v4設定)
+├── components.json             # shadcn/ui 設定
+├── postcss.config.mjs          # PostCSS設定 (@tailwindcss/postcss)
+├── tsconfig.json
+└── package.json
+```
+
+**特徴:**
+- **shadcn/ui**: コピー可能なコンポーネント（依存ではなくコード）
+- **Tailwind v4**: `@source`ディレクティブでcontent自動検出
+- **next-themes**: ダークモード対応
+- **lucide-react**: アイコンライブラリ
+- **tw-animate-css**: アニメーション（Tailwind v4対応）
+
+**使用例:**
+```typescript
+// apps/web/src/app/page.tsx
+import { Button } from '@repo/ui/components/button';
+import { Card } from '@repo/ui/components/card';
+import { cn } from '@repo/ui/lib/utils';
+```
+
+**shadcn CLIでコンポーネント追加:**
+```bash
+cd apps/web
+npx shadcn@latest add button
+# → packages/ui/src/components/button.tsx に自動配置
+```
 │   ├── styles/
 │   │   └── globals.css
 │   └── index.ts                # Public API
@@ -840,13 +876,20 @@ chore: その他
 - workspacesの管理が厳格
 - Turborepoと相性が良い
 
-### Q3: packages/uiとapps/web/src/components/uiの使い分けは？
+### Q3: packages/uiとapps/web/src/components/の使い分けは？
 
 **A:**
-- **packages/ui**: 複数アプリで使う汎用コンポーネント(Button, Input等)
-- **apps/web/src/components/ui**: Webアプリ専用のコンポーネント
+- **packages/ui**: 複数アプリで使う汎用UIコンポーネント（shadcn/uiコンポーネント）
+  - Button, Card, Input, Dialog等の基本UIコンポーネント
+  - ブラウザ拡張、モバイルアプリでも使用可能
+- **apps/web/src/components/**: Webアプリ専用のコンポーネント
+  - レイアウトコンポーネント（MainLayout, AuthLayout）
+  - Providerコンポーネント（AppProvider, QueryProvider）
 
-MVP段階では`apps/web/src/components/ui`のみで十分。将来的にモバイルアプリなどを追加する際に`packages/ui`に移行。
+**shadcn/ui採用により:**
+- `packages/ui`にshadcn/uiコンポーネントを配置
+- shadcn CLIで自動的に`packages/ui`に追加される
+- アプリ固有のコンポーネントは各app内に配置
 
 ### Q4: features/とcomponents/の使い分けは？
 
