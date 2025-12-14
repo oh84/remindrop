@@ -61,34 +61,51 @@ remindrop/
 ### セットアップ
 
 ```bash
+# リポジトリのクローン
+git clone <repository-url>
+cd remindrop
+
 # 環境変数の設定
 cp .env.example .env              # Docker Compose用
-cp .env.local.example .env.local  # Next.js用（Phase 1.4以降）
-
-# PostgreSQLの起動（Docker Compose）
-docker compose up -d
+cp .env.local.example .env.local  # Next.js用
 
 # 依存関係のインストール
 pnpm install
 
+# PostgreSQL起動
+pnpm db:up
+
 # データベースマイグレーション
+cd packages/db
 pnpm db:migrate
+cd ../..
 
 # 開発サーバー起動
 pnpm dev
 # Web: http://localhost:3000
 # API: http://localhost:3001
+# API Docs: http://localhost:3001/api/docs
 ```
 
-**注:** AWS RDSへの移行はPhase 3（デプロイ準備時）に実施
+**注:** 
+- 初回セットアップ時は `pnpm db:up` でPostgreSQLを起動してください
+- 以降、`pnpm dev` はPostgreSQLコンテナを自動チェック・起動します
+- AWS RDSへの移行はPhase 3（デプロイ準備時）に実施
 
 ### コマンド
 
 ```bash
-pnpm dev          # 全アプリ起動
+# 開発
+pnpm dev          # 全アプリ起動（PostgreSQL自動起動）
 pnpm build        # 全アプリビルド
 pnpm lint         # リント
 pnpm type-check   # 型チェック
+pnpm format       # コード整形
+
+# データベース
+pnpm db:up        # PostgreSQL起動のみ
+pnpm db:down      # PostgreSQL停止
+pnpm db:reset     # PostgreSQLリセット（データ削除）
 ```
 
 ## ロードマップ
@@ -96,8 +113,11 @@ pnpm type-check   # 型チェック
 詳細は [tasks.md](docs/tasks.md) を参照。
 
 **Phase 1-2 (ローカル開発)**
-- ✅ 基盤構築
-- ⏳ 認証
+- ✅ モノレポ基盤構築
+- ✅ Next.js Webアプリ + shadcn/ui
+- ✅ Hono API + OpenAPI
+- ✅ Drizzle ORM + PostgreSQL
+- ⏳ 認証（BetterAuth）
 - ⏳ ブックマークCRUD
 - ⏳ 検索機能
 
