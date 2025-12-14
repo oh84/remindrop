@@ -21,7 +21,7 @@
   docker compose up -d
   docker compose ps
   ```
-- [ ] データベース接続確認（Task 1.3で実施）
+- [x] データベース接続確認（Task 1.3で実施）
 
 ### Task 1.1: モノレポ初期化 ✅
 - [x] pnpm workspaceセットアップ
