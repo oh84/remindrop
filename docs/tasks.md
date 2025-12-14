@@ -42,11 +42,12 @@
 
 **注:** AWS RDS構築はPhase 3（デプロイ準備時）に実施
 
-### Task 1.4: Next.js Webアプリセットアップ
-- [ ] apps/web 作成（Next.js 15）
-- [ ] TailwindCSS設定
-- [ ] TypeScript設定
-- [ ] ディレクトリ構造作成（Bulletproof React）
+### Task 1.4: Next.js Webアプリセットアップ ✅
+- [x] apps/web 作成（Next.js 15）
+- [x] TailwindCSS設定
+- [x] TypeScript設定
+- [x] ディレクトリ構造作成（Bulletproof React）
+- [x] 開発サーバー起動確認 (http://localhost:3000)
 
 ### Task 1.5: Hono APIセットアップ
 - [ ] apps/api 作成

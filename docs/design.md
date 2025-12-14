@@ -76,9 +76,11 @@ graph TB
 | Next.js | 15 | Webアプリケーションフレームワーク |
 | React | 19 | UIライブラリ |
 | TypeScript | 5.x | 型安全な開発 |
-| TailwindCSS | 3.x | スタイリング |
+| TailwindCSS | 4.x | スタイリング（@tailwindcss/postcss） |
+| shadcn/ui | Latest | UIコンポーネントライブラリ |
 | React Query | 5.x | サーバー状態管理・データフェッチング |
-| Zustand | 4.x | クライアント状態管理(軽量) |
+| Zustand | 4.x | クライアント状態管理(軽量・オプション) |
+| next-themes | Latest | ダークモード対応 |
 
 #### バックエンド
 | 技術 | バージョン | 用途 |
