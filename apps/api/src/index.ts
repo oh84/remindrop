@@ -2,17 +2,29 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import { swaggerUI } from '@hono/swagger-ui';
 import { serve } from '@hono/node-server';
 import { logger } from 'hono/logger';
+import { cors } from 'hono/cors';
 import { errorHandler } from './middleware/error-handler';
 import healthRoutes from './routes/health';
+import authRoutes from './routes/auth';
 
 const app = new OpenAPIHono();
 
 // Middleware
 app.use('*', logger());
+app.use(
+  '*',
+  cors({
+    origin: ['http://localhost:3000', process.env.NEXT_PUBLIC_APP_URL || ''].filter(Boolean),
+    credentials: true,
+    allowHeaders: ['Content-Type', 'Authorization'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+);
 app.onError(errorHandler);
 
 // Routes
 app.route('/', healthRoutes);
+app.route('/api/auth', authRoutes);
 
 // OpenAPI documentation
 app.doc('/api/openapi.json', {
