@@ -18,7 +18,7 @@ export function SignInForm() {
       await signIn.email({
         email,
         password,
-        callbackURL: '/bookmarks',
+        callbackURL: '/bookmarks', // サインイン成功後にリダイレクト
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'ログインに失敗しました');

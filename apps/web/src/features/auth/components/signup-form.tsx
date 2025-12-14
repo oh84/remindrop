@@ -32,7 +32,7 @@ export function SignUpForm() {
         email,
         password,
         name,
-        callbackURL: '/bookmarks',
+        callbackURL: '/bookmarks', // サインアップ成功後にリダイレクト
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : '登録に失敗しました');
