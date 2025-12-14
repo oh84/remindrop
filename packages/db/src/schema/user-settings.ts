@@ -1,12 +1,12 @@
 // User settings schema
 import { pgTable, uuid, text, integer, timestamp, index } from 'drizzle-orm/pg-core';
-import { users } from './users';
+import { users } from './auth';
 
 export const userSettings = pgTable(
   'user_settings',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id')
+    userId: text('user_id')
       .notNull()
       .unique()
       .references(() => users.id, { onDelete: 'cascade' }),
@@ -17,7 +17,5 @@ export const userSettings = pgTable(
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
-  (table) => ({
-    userIdIdx: index('user_settings_user_id_idx').on(table.userId),
-  })
+  (table) => [index('user_settings_user_id_idx').on(table.userId)]
 );

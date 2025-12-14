@@ -1,6 +1,6 @@
 // Bookmark schema
 import { pgTable, uuid, text, timestamp, pgEnum, index } from 'drizzle-orm/pg-core';
-import { users } from './users';
+import { users } from './auth';
 
 export const bookmarkStatusEnum = pgEnum('bookmark_status', [
   'processing',
@@ -12,7 +12,7 @@ export const bookmarks = pgTable(
   'bookmarks',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id')
+    userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     url: text('url').notNull(),
@@ -25,14 +25,11 @@ export const bookmarks = pgTable(
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
-  (table) => ({
-    userIdIdx: index('bookmarks_user_id_idx').on(table.userId),
-    userIdCreatedAtIdx: index('bookmarks_user_id_created_at_idx').on(
-      table.userId,
-      table.createdAt
-    ),
-    statusIdx: index('bookmarks_status_idx').on(table.status),
-  })
+  (table) => [
+    index('bookmarks_user_id_idx').on(table.userId),
+    index('bookmarks_user_id_created_at_idx').on(table.userId, table.createdAt),
+    index('bookmarks_status_idx').on(table.status),
+  ]
 );
 
 export const tags = pgTable(
@@ -40,16 +37,16 @@ export const tags = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
-    userId: uuid('user_id')
+    userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
-  (table) => ({
-    userIdIdx: index('tags_user_id_idx').on(table.userId),
-    userIdNameIdx: index('tags_user_id_name_idx').on(table.userId, table.name),
-  })
+  (table) => [
+    index('tags_user_id_idx').on(table.userId),
+    index('tags_user_id_name_idx').on(table.userId, table.name),
+  ]
 );
 
 export const bookmarkTags = pgTable(
@@ -62,8 +59,8 @@ export const bookmarkTags = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
   },
-  (table) => ({
-    bookmarkIdIdx: index('bookmark_tags_bookmark_id_idx').on(table.bookmarkId),
-    tagIdIdx: index('bookmark_tags_tag_id_idx').on(table.tagId),
-  })
+  (table) => [
+    index('bookmark_tags_bookmark_id_idx').on(table.bookmarkId),
+    index('bookmark_tags_tag_id_idx').on(table.tagId),
+  ]
 );

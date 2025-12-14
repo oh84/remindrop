@@ -1,5 +1,4 @@
 // Export all schemas
-export * from './users';
-export * from './auth';
+export * from './auth'; // BetterAuth schema (users, sessions, accounts, verifications)
 export * from './bookmarks';
 export * from './user-settings';
