@@ -15,6 +15,7 @@
     "@hono/zod-openapi": "^0.18.4",
     "@repo/db": "workspace:*",
     "@repo/types": "workspace:*",
+    "better-auth": "^1.4.6",
     "hono": "^4.6.14",
     "zod": "^3.24.2"
   },
