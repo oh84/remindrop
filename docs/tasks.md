@@ -66,14 +66,14 @@
 
 ## Phase 2: コア機能実装
 
-### Task 2.1: データベーススキーマ定義
-- [ ] Drizzle ORM セットアップ
-- [ ] packages/db 作成
-- [ ] Userスキーマ定義
-- [ ] Bookmarkスキーマ定義
-- [ ] Tagスキーマ定義
-- [ ] リレーション定義
-- [ ] マイグレーション生成・実行
+### Task 2.1: データベーススキーマ定義 ✅
+- [x] Drizzle ORM セットアップ（Task 1.3で完了）
+- [x] packages/db 作成
+- [x] Userスキーマ定義（users, sessions, accounts, verifications）
+- [x] Bookmarkスキーマ定義（bookmarks, tags, bookmark_tags）
+- [x] User Settingsスキーマ定義
+- [x] リレーション定義（外部キー、インデックス）
+- [x] マイグレーション生成・実行（0000_kind_maginty.sql）
 
 ### Task 2.2: 認証機能
 - [ ] BetterAuth セットアップ

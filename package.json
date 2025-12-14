@@ -11,12 +11,15 @@
   },
   "packageManager": "pnpm@10.25.0",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "sh scripts/dev.sh && turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "type-check": "turbo run type-check",
-    "clean": "turbo run clean && rm -rf node_modules .turbo"
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d postgres"
   },
   "devDependencies": {
     "prettier": "^3.4.2",
