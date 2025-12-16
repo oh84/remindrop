@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@repo/ui/components/button';
-import { Card } from '@repo/ui/components/card';
+import { Button, Card } from '@repo/ui';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';

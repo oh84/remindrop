@@ -3,6 +3,7 @@
 import { useSession, signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function AppLayout({
   children,
@@ -46,12 +47,13 @@ export default function AppLayout({
             Remindrop
           </h1>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {session.user.name}
             </span>
             <button
               onClick={handleSignOut}
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-primary hover:underline font-medium"
             >
               ログアウト
             </button>

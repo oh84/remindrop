@@ -3,6 +3,7 @@
 import { useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function AuthLayout({
   children,
@@ -19,26 +20,23 @@ export default function AuthLayout({
     }
   }, [session, isPending, router]);
 
-  // ローディング中
-  if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // 認証済みの場合は何も表示しない（リダイレクト処理中）
-  if (session) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {children}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      {/* ローディング中またはリダイレクト中 */}
+      {isPending || session ? (
+        isPending && (
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">読み込み中...</p>
+          </div>
+        )
+      ) : (
+        children
+      )}
     </div>
   );
 }
