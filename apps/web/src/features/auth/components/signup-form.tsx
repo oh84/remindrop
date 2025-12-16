@@ -23,15 +23,23 @@ import Link from 'next/link';
 
 const signUpSchema = z
   .object({
-    name: z.string().min(1, '名前を入力してください'),
+    name: z
+      .string()
+      .min(1, '名前を入力してください')
+      .max(100, '名前は100文字以内で入力してください'),
     email: z
       .string()
       .min(1, 'メールアドレスを入力してください')
+      .max(254, 'メールアドレスは254文字以内で入力してください') // RFC 5321の標準最大長
       .email('有効なメールアドレスを入力してください'),
     password: z
       .string()
-      .min(8, 'パスワードは8文字以上で入力してください'),
-    confirmPassword: z.string().min(1, 'パスワード(確認)を入力してください'),
+      .min(8, 'パスワードは8文字以上で入力してください')
+      .max(128, 'パスワードは128文字以内で入力してください'),
+    confirmPassword: z
+      .string()
+      .min(1, 'パスワード(確認)を入力してください')
+      .max(128, 'パスワード(確認)は128文字以内で入力してください'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'パスワードが一致しません',

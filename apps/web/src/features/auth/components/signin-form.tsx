@@ -25,8 +25,12 @@ const signInSchema = z.object({
   email: z
     .string()
     .min(1, 'メールアドレスを入力してください')
+    .max(254, 'メールアドレスは254文字以内で入力してください') // RFC 5321の標準最大長
     .email('有効なメールアドレスを入力してください'),
-  password: z.string().min(1, 'パスワードを入力してください'),
+  password: z
+    .string()
+    .min(1, 'パスワードを入力してください')
+    .max(128, 'パスワードは128文字以内で入力してください'),
 });
 
 type SignInFormData = z.infer<typeof signInSchema>;
