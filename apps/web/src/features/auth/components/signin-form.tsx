@@ -49,7 +49,7 @@ export function SignInForm() {
   const onSubmit = async (data: SignInFormData) => {
     setError('');
 
-    const result = await signIn.email(
+    await signIn.email(
       {
         email: data.email,
         password: data.password,
@@ -61,10 +61,6 @@ export function SignInForm() {
         },
       }
     );
-
-    if (result.error) {
-      setError(result.error.message || 'ログインに失敗しました');
-    }
   };
 
   return (

@@ -64,7 +64,7 @@ export function SignUpForm() {
   const onSubmit = async (data: SignUpFormData) => {
     setError('');
 
-    const result = await signUp.email(
+    await signUp.email(
       {
         email: data.email,
         password: data.password,
@@ -77,10 +77,6 @@ export function SignUpForm() {
         },
       }
     );
-
-    if (result.error) {
-      setError(result.error.message || '登録に失敗しました');
-    }
   };
 
   return (
