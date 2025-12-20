@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { openAPI } from 'better-auth/plugins';
 import { db } from '@repo/db';
 import { z } from 'zod';
 
@@ -42,6 +43,9 @@ export const auth = betterAuth({
     'http://localhost:3000', // Next.js dev server
     env.NEXT_PUBLIC_APP_URL || '',
   ].filter(Boolean),
+  plugins: [
+    openAPI(),
+  ],
 });
 
 export type Session = typeof auth.$Infer.Session.session;

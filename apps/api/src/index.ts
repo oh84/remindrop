@@ -1,5 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { swaggerUI } from '@hono/swagger-ui';
+import { Scalar } from '@scalar/hono-api-reference';
 import { serve } from '@hono/node-server';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
@@ -42,8 +42,17 @@ app.doc('/api/openapi.json', {
   ],
 });
 
-// Swagger UI
-app.get('/api/docs', swaggerUI({ url: '/api/openapi.json' }));
+// Scalar API Reference with multiple sources
+app.get(
+  '/api/docs',
+  Scalar({
+    pageTitle: 'Remindrop API Documentation',
+    sources: [
+      { url: '/api/openapi.json', title: 'Remindrop API' },
+      { url: '/api/auth/open-api/generate-schema', title: 'Auth' },
+    ],
+  })
+);
 
 // Start server
 const port = 3001;

@@ -406,7 +406,9 @@ apps/api/
 │   │   └── index.ts
 │   ├── config/
 │   │   └── env.ts             # 環境変数
-│   ├── index.ts               # OpenAPIHono app + Swagger UI
+│   ├── lib/
+│   │   └── auth.ts            # Better Auth設定
+│   ├── index.ts               # OpenAPIHono app + Scalar
 │   └── daily-summary.ts       # デイリーサマリーLambda
 ├── package.json
 └── tsconfig.json
@@ -416,12 +418,14 @@ apps/api/
 ```typescript
 // src/index.ts
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { swaggerUI } from '@hono/swagger-ui';
+import { Scalar } from '@scalar/hono-api-reference';
 import bookmarks from './routes/bookmarks';
+import authRoutes from './routes/auth';
 
 const app = new OpenAPIHono();
 
 app.route('/api/bookmarks', bookmarks);
+app.route('/api/auth', authRoutes);
 
 // OpenAPI仕様書
 app.doc('/api/openapi.json', {
@@ -429,8 +433,28 @@ app.doc('/api/openapi.json', {
   info: { version: '1.0.0', title: 'Remindrop API' },
 });
 
-// Swagger UI
-app.get('/api/docs', swaggerUI({ url: '/api/openapi.json' }));
+// Scalar API Reference (Better Auth統合)
+app.get('/api/docs', Scalar({
+  pageTitle: 'Remindrop API Documentation',
+  sources: [
+    { url: '/api/openapi.json', title: 'Remindrop API' },
+    { url: '/api/auth/open-api/generate-schema', title: 'Authentication' },
+  ],
+}));
+```
+
+**Better Auth統合:**
+```typescript
+// src/lib/auth.ts
+import { betterAuth } from 'better-auth';
+import { openAPI } from 'better-auth/plugins';
+
+export const auth = betterAuth({
+  // ... 設定
+  plugins: [
+    openAPI(), // OpenAPIプラグインを有効化
+  ],
+});
 ```
 
 ---
@@ -726,7 +750,7 @@ apps/web/
 NEXT_PUBLIC_API_URL=http://localhost:3001
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3001
 ```
 
 ### 8.6 コード品質管理
