@@ -1,18 +1,31 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { swaggerUI } from '@hono/swagger-ui';
+import { Scalar } from '@scalar/hono-api-reference';
 import { serve } from '@hono/node-server';
 import { logger } from 'hono/logger';
+import { cors } from 'hono/cors';
 import { errorHandler } from './middleware/error-handler';
 import healthRoutes from './routes/health';
+import authRoutes from './routes/auth';
+import { env } from './env';
 
 const app = new OpenAPIHono();
 
 // Middleware
 app.use('*', logger());
+app.use(
+  '*',
+  cors({
+    origin: [env.WEB_URL].filter(Boolean),
+    credentials: true,
+    allowHeaders: ['Content-Type', 'Authorization'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  })
+);
 app.onError(errorHandler);
 
 // Routes
 app.route('/', healthRoutes);
+app.route('/api/auth', authRoutes);
 
 // OpenAPI documentation
 app.doc('/api/openapi.json', {
@@ -24,23 +37,31 @@ app.doc('/api/openapi.json', {
   },
   servers: [
     {
-      url: 'http://localhost:3001',
-      description: 'Local development server',
+      url: env.API_URL,
+      description: 'API server',
     },
   ],
 });
 
-// Swagger UI
-app.get('/api/docs', swaggerUI({ url: '/api/openapi.json' }));
+// Scalar API Reference with multiple sources
+app.get(
+  '/api/docs',
+  Scalar({
+    pageTitle: 'Remindrop API Documentation',
+    sources: [
+      { url: '/api/openapi.json', title: 'Remindrop API' },
+      { url: '/api/auth/open-api/generate-schema', title: 'Auth' },
+    ],
+  })
+);
 
 // Start server
-const port = 3001;
-console.log(`🚀 Server is running on http://localhost:${port}`);
-console.log(`📚 API docs available at http://localhost:${port}/api/docs`);
+console.log(`🚀 Server is running on ${env.API_URL}`);
+console.log(`📚 API docs available at ${env.API_URL}/api/docs`);
 
 serve({
   fetch: app.fetch,
-  port,
+  port: env.API_PORT,
 });
 
 export default app;

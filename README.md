@@ -66,8 +66,10 @@ git clone <repository-url>
 cd remindrop
 
 # 環境変数の設定
-cp .env.example .env              # Docker Compose用
-cp .env.local.example .env.local  # Next.js用
+cp .env.example .env                           # Docker Compose用
+cp apps/web/.env.example apps/web/.env         # Next.js用
+cp apps/api/.env.example apps/api/.env         # API用
+cp packages/db/.env.example packages/db/.env   # DB用
 
 # 依存関係のインストール
 pnpm install

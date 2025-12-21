@@ -1,6 +1,7 @@
 {
   "extends": "@repo/config/typescript.json",
   "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "plugins": [
       {
         "name": "next"
@@ -13,7 +14,9 @@
     },
     "noEmit": true,
     "isolatedModules": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "declaration": false,
+    "declarationMap": false
   },
   "include": [
     "next-env.d.ts",

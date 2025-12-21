@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 // Database connection test script
-import 'dotenv/config';
 import { db } from './src/index';
 import { sql } from 'drizzle-orm';
 

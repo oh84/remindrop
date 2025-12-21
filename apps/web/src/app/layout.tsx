@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import '@repo/ui/globals.css';
-import { ThemeProvider } from '@repo/ui/components/theme-provider';
+import { ThemeProvider } from '@/providers/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Remindrop - Bookmark Management with AI',
