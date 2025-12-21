@@ -6,6 +6,7 @@ import { cors } from 'hono/cors';
 import { errorHandler } from './middleware/error-handler';
 import healthRoutes from './routes/health';
 import authRoutes from './routes/auth';
+import { env } from './env';
 
 const app = new OpenAPIHono();
 
@@ -14,7 +15,7 @@ app.use('*', logger());
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:3000', process.env.NEXT_PUBLIC_APP_URL || ''].filter(Boolean),
+    origin: [env.WEB_URL].filter(Boolean),
     credentials: true,
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -36,8 +37,8 @@ app.doc('/api/openapi.json', {
   },
   servers: [
     {
-      url: 'http://localhost:3001',
-      description: 'Local development server',
+      url: env.API_URL,
+      description: 'API server',
     },
   ],
 });
@@ -55,13 +56,12 @@ app.get(
 );
 
 // Start server
-const port = 3001;
-console.log(`🚀 Server is running on http://localhost:${port}`);
-console.log(`📚 API docs available at http://localhost:${port}/api/docs`);
+console.log(`🚀 Server is running on ${env.API_URL}`);
+console.log(`📚 API docs available at ${env.API_URL}/api/docs`);
 
 serve({
   fetch: app.fetch,
-  port,
+  port: env.API_PORT,
 });
 
 export default app;
