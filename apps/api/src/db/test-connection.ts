@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Database connection test script
-import { db } from './src/index';
+import { db } from '.';
 import { sql } from 'drizzle-orm';
 
 async function testConnection() {

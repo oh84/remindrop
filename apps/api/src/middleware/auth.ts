@@ -3,7 +3,7 @@ import { auth } from '../lib/auth';
 import type { User, Session } from '../lib/auth';
 
 // Honoのコンテキストに型を追加
-type AuthVariables = {
+export type AuthVariables = {
   user: User;
   session: Session;
 };

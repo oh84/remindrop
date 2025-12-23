@@ -3,10 +3,13 @@ import { Scalar } from '@scalar/hono-api-reference';
 import { serve } from '@hono/node-server';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
-import { errorHandler } from './middleware/error-handler';
-import healthRoutes from './routes/health';
-import authRoutes from './routes/auth';
 import { env } from './env';
+import { authMiddleware } from './middleware/auth';
+import { errorHandler } from './handlers/error';
+import { notFoundHandler } from './handlers/not-found';
+import healthRoute from './features/health';
+import authRoute from './features/auth';
+import bookmarkRoute from './features/bookmarks';
 
 const app = new OpenAPIHono();
 
@@ -21,11 +24,10 @@ app.use(
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   })
 );
-app.onError(errorHandler);
 
-// Routes
-app.route('/', healthRoutes);
-app.route('/api/auth', authRoutes);
+// Handlers
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 // OpenAPI documentation
 app.doc('/api/openapi.json', {
@@ -54,6 +56,16 @@ app.get(
     ],
   })
 );
+
+// Public Routes
+app.route('/api/health', healthRoute);
+app.route('/api/auth', authRoute);
+
+// Protected Routes
+const protectedApp = new OpenAPIHono();
+protectedApp.use('*', authMiddleware);
+protectedApp.route('/api/bookmarks', bookmarkRoute);
+app.route('/', protectedApp);
 
 // Start server
 console.log(`🚀 Server is running on ${env.API_URL}`);

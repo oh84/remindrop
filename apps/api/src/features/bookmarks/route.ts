@@ -1,0 +1,202 @@
+import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import {
+  BookmarkSchema,
+  CreateBookmarkSchema,
+  UpdateBookmarkSchema,
+  BookmarkListSchema
+} from '@repo/types';
+import { AuthVariables } from '../../middleware/auth';
+import { bookmarkService } from './service';
+
+const app = new OpenAPIHono<{ Variables: AuthVariables }>();
+
+// List Bookmarks
+const listBookmarkRoute = createRoute({
+  method: 'get',
+  path: '/',
+  tags: ['Bookmarks'],
+  summary: 'List user bookmarks',
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: BookmarkListSchema,
+        },
+      },
+      description: 'List of bookmarks',
+    },
+  },
+});
+
+app.openapi(listBookmarkRoute, async (c) => {
+  const user = c.get('user');
+  const bookmarks = await bookmarkService.list(user.id);
+
+  return c.json({
+    bookmarks: bookmarks,
+    total: bookmarks.length,
+    page: 1,
+    limit: bookmarks.length,
+  });
+});
+
+// Create Bookmark
+const createBookmarkRoute = createRoute({
+  method: 'post',
+  path: '/',
+  tags: ['Bookmarks'],
+  summary: 'Create a new bookmark',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CreateBookmarkSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    201: {
+      content: {
+        'application/json': {
+          schema: BookmarkSchema,
+        },
+      },
+      description: 'Created bookmark',
+    },
+  },
+});
+
+app.openapi(createBookmarkRoute, async (c) => {
+  const user = c.get('user');
+  const data = c.req.valid('json');
+  const bookmark = await bookmarkService.create(user.id, data);
+
+  return c.json(bookmark, 201);
+});
+
+// Get Bookmark
+const getBookmarkRoute = createRoute({
+  method: 'get',
+  path: '/:id',
+  tags: ['Bookmarks'],
+  summary: 'Get bookmark by ID',
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: BookmarkSchema,
+        },
+      },
+      description: 'The bookmark',
+    },
+    404: {
+      description: 'Bookmark not found',
+    },
+  },
+});
+
+app.openapi(getBookmarkRoute, async (c) => {
+  const user = c.get('user');
+  const { id } = c.req.valid('param');
+
+  const bookmark = await bookmarkService.get(id, user.id);
+  if (!bookmark) {
+    return c.json({ error: 'Bookmark not found' }, 404);
+  }
+
+  return c.json(bookmark);
+});
+
+// Update Bookmark
+const updateBookmarkRoute = createRoute({
+  method: 'patch',
+  path: '/:id',
+  tags: ['Bookmarks'],
+  summary: 'Update bookmark',
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: UpdateBookmarkSchema,
+        },
+      },
+      required: true,
+    },
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: BookmarkSchema,
+        },
+      },
+      description: 'Updated bookmark',
+    },
+    404: {
+      description: 'Bookmark not found',
+    },
+  },
+});
+
+app.openapi(updateBookmarkRoute, async (c) => {
+  const user = c.get('user');
+  const { id } = c.req.valid('param');
+  const data = c.req.valid('json');
+
+  const bookmark = await bookmarkService.update(id, user.id, data);
+  if (!bookmark) {
+    return c.json({ error: 'Bookmark not found' }, 404);
+  }
+
+  return c.json(bookmark);
+});
+
+// Delete Bookmark
+const deleteBookmarkRoute = createRoute({
+  method: 'delete',
+  path: '/:id',
+  tags: ['Bookmarks'],
+  summary: 'Delete bookmark',
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: BookmarkSchema,
+        },
+      },
+      description: 'Deleted bookmark',
+    },
+    404: {
+      description: 'Bookmark not found',
+    },
+  },
+});
+
+app.openapi(deleteBookmarkRoute, async (c) => {
+  const user = c.get('user');
+  const { id } = c.req.valid('param');
+
+  const bookmark = await bookmarkService.delete(id, user.id);
+  if (!bookmark) {
+    return c.json({ error: 'Bookmark not found' }, 404);
+  }
+
+  return c.json(bookmark);
+});
+
+export default app;

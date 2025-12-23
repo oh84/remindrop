@@ -13,7 +13,7 @@ const HealthCheckSchema = z.object({
 // Health check route definition
 const healthRoute = createRoute({
   method: 'get',
-  path: '/health',
+  path: '/',
   tags: ['System'],
   summary: 'Health check endpoint',
   description: 'Check if the API server is running',
