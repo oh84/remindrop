@@ -2,7 +2,6 @@
   "extends": "@repo/config/typescript.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "target": "ES2022",
@@ -13,6 +12,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "drizzle.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -33,7 +33,6 @@ remindrop/
 ├── packages/
 │   ├── ui/               # 共有UIコンポーネント
 │   ├── types/            # TypeScript型定義
-│   ├── db/               # Drizzleスキーマ
 │   ├── config/           # 共通設定
 │   └── utils/            # ユーティリティ
 ├── infra/                # AWS CDK
@@ -69,7 +68,6 @@ cd remindrop
 cp .env.example .env                           # Docker Compose用
 cp apps/web/.env.example apps/web/.env         # Next.js用
 cp apps/api/.env.example apps/api/.env         # API用
-cp packages/db/.env.example packages/db/.env   # DB用
 
 # 依存関係のインストール
 pnpm install
@@ -78,9 +76,7 @@ pnpm install
 pnpm db:up
 
 # データベースマイグレーション
-cd packages/db
-pnpm db:migrate
-cd ../..
+pnpm -F api db:migrate
 
 # 開発サーバー起動
 pnpm dev

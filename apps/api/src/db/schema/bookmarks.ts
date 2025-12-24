@@ -32,6 +32,9 @@ export const bookmarks = pgTable(
   ]
 );
 
+export type Bookmark = typeof bookmarks.$inferSelect;
+export type NewBookmark = typeof bookmarks.$inferInsert;
+
 export const tags = pgTable(
   'tags',
   {

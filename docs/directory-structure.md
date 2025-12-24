@@ -120,29 +120,29 @@ export type { Bookmark } from './types';
 ```
 apps/api/
 ├── src/
-│   ├── routes/                  # APIルート
-│   │   ├── health.ts           # ヘルスチェック
-│   │   ├── auth.ts             # 認証 (Better Auth)
-│   │   ├── bookmarks.ts        # ブックマークCRUD
-│   │   ├── tags.ts             # タグCRUD
-│   │   └── search.ts           # 検索
-│   ├── lib/                     # ライブラリ
-│   │   ├── auth.ts             # Better Auth設定
-│   │   └── utils.ts
+│   ├── features/                # 機能別モジュール
+│   │   ├── [feature]/
+│   │   │   ├── route.ts        # APIルート定義
+│   │   │   ├── service.ts      # ビジネスロジック
+│   │   │   ├── repository.ts   # データアクセス
+│   │   │   └── index.ts        # 公開エクスポート
+│   ├── handlers/                # 共通ハンドラ
+│   │   ├── error.ts
+│   │   └── not-found.ts
 │   ├── middleware/              # ミドルウェア
-│   │   ├── error-handler.ts    # エラーハンドリング
-│   │   ├── auth.ts             # 認証ミドルウェア
-│   │   └── logger.ts           # ロガー
-│   ├── types/                   # 型定義
+│   │   └── auth.ts
+│   ├── db/                      # データベース
+│   │   ├── schema/
 │   │   └── index.ts
-│   ├── env.ts                   # 環境変数バリデーション (Zod)
+│   ├── lib/                     # 共有ライブラリ
+│   ├── env.ts                   # 環境変数バリデーション
 │   └── index.ts                 # エントリーポイント
+├── drizzle.config.ts            # Drizzle設定
 ├── .env                         # 環境変数
 ├── .env.example                 # 環境変数サンプル
 ├── package.json
 ├── tsconfig.json
-├── vitest.config.ts
-└── README.md
+└── vitest.config.ts
 ```
 
 ### 3.2 ルート設計
@@ -186,32 +186,22 @@ export default new OpenAPIHono().openapi(route, async (c) => {
 
 ---
 
-## 4. packages/db (Drizzle ORM)
+## 4. データベース (apps/api/src/db)
+
+`packages/db` は廃止され、`apps/api/src/db` に統合されました。
 
 ### 4.1 全体構成
 
 ```
-packages/db/
-├── src/
-│   ├── schema/                  # テーブル定義
-│   │   ├── users.ts
-│   │   ├── sessions.ts         # Better Auth用
-│   │   ├── accounts.ts         # Better Auth用
-│   │   ├── verification-tokens.ts  # Better Auth用
-│   │   ├── bookmarks.ts
-│   │   ├── tags.ts
-│   │   ├── bookmark-tags.ts
-│   │   └── index.ts            # スキーマエクスポート
-│   └── index.ts                 # DB接続・エクスポート
-├── migrations/                  # マイグレーションファイル
-│   └── 0000_*.sql
-├── .env                         # 環境変数
-├── .env.example                 # 環境変数サンプル
-├── drizzle.config.ts            # Drizzle Kit設定
-├── package.json
-├── tsconfig.json
-└── test-connection.ts           # 接続テスト
+apps/api/src/db/
+├── schema/                  # テーブル定義
+│   ├── bookmarks.ts
+│   ├── ...
+│   └── index.ts
+└── index.ts                 # DB接続・エクスポート
 ```
+
+マイグレーションファイルは `apps/api/migrations/` に配置されます。
 
 ### 4.2 スキーマ設計原則
 

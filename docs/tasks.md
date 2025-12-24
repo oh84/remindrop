@@ -84,15 +84,15 @@
 - [x] 保護ルート設定（Web）
 
 ### Task 2.3: ブックマークCRUD API
-- [ ] OpenAPI スキーマ定義（Zod）
-- [ ] POST /api/bookmarks（作成）- createRoute
-- [ ] GET /api/bookmarks（一覧取得）- createRoute
-- [ ] GET /api/bookmarks/:id（詳細取得）- createRoute
-- [ ] PATCH /api/bookmarks/:id（更新）- createRoute
-- [ ] DELETE /api/bookmarks/:id（削除）- createRoute
-- [ ] バリデーション（Zod schemas）
-- [ ] エラーハンドリング
-- [ ] OpenAPI仕様書の確認（/api/docs）
+- [x] OpenAPI スキーマ定義（Zod）
+- [x] POST /api/bookmarks（作成）- createRoute
+- [x] GET /api/bookmarks（一覧取得）- createRoute
+- [x] GET /api/bookmarks/:id（詳細取得）- createRoute
+- [x] PATCH /api/bookmarks/:id（更新）- createRoute
+- [x] DELETE /api/bookmarks/:id（削除）- createRoute
+- [x] バリデーション（Zod schemas）
+- [x] エラーハンドリング
+- [x] OpenAPI仕様書の確認（/api/docs）
 
 ### Task 2.4: ブックマーク一覧画面
 - [ ] React Query セットアップ
