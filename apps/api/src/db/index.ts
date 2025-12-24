@@ -11,7 +11,10 @@ if (!connectionString) {
 }
 
 // Create postgres client
-const client = postgres(connectionString);
+const client = postgres(connectionString, {
+  // テスト環境ではNOTICEログを抑制
+  onnotice: process.env.NODE_ENV === 'test' ? () => {} : undefined,
+});
 
 // Create drizzle instance
 export const db = drizzle(client, { schema });

@@ -20,6 +20,9 @@ pnpm build
 
 # 型チェック
 pnpm type-check
+
+# テスト（Docker必須）
+pnpm test
 ```
 
 ## エンドポイント
