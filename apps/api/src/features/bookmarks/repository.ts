@@ -1,14 +1,24 @@
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, count } from 'drizzle-orm';
 import { db } from '../../db';
 import { bookmarks, type Bookmark, type NewBookmark } from '../../db/schema';
 
 export const bookmarkRepository = {
-  async findManyByUserId(userId: string) {
+  async findManyByUserId(userId: string, limit: number, offset: number) {
     return await db
       .select()
       .from(bookmarks)
       .where(eq(bookmarks.userId, userId))
-      .orderBy(desc(bookmarks.createdAt));
+      .orderBy(desc(bookmarks.createdAt))
+      .limit(limit)
+      .offset(offset);
+  },
+
+  async countByUserId(userId: string) {
+    const [result] = await db
+      .select({ count: count() })
+      .from(bookmarks)
+      .where(eq(bookmarks.userId, userId));
+    return result?.count ?? 0;
   },
 
   async findById(id: string) {

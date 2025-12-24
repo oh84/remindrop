@@ -3,8 +3,13 @@ import { CreateBookmarkSchema, UpdateBookmarkSchema } from '@repo/types';
 import { z } from 'zod';
 
 export const bookmarkService = {
-  async list(userId: string) {
-    return await bookmarkRepository.findManyByUserId(userId);
+  async list(userId: string, page: number, limit: number) {
+    const offset = (page - 1) * limit;
+    const [bookmarks, total] = await Promise.all([
+      bookmarkRepository.findManyByUserId(userId, limit, offset),
+      bookmarkRepository.countByUserId(userId),
+    ]);
+    return { bookmarks, total };
   },
 
   async get(id: string, userId: string) {

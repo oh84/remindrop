@@ -16,6 +16,20 @@ const listBookmarkRoute = createRoute({
   path: '/',
   tags: ['Bookmarks'],
   summary: 'List user bookmarks',
+  request: {
+    query: z.object({
+      page: z.coerce.number().int().min(1).default(1).openapi({
+        param: { name: 'page', in: 'query' },
+        example: 1,
+        description: 'Page number (1-indexed)',
+      }),
+      limit: z.coerce.number().int().min(1).max(100).default(20).openapi({
+        param: { name: 'limit', in: 'query' },
+        example: 20,
+        description: 'Number of items per page (max 100)',
+      }),
+    }),
+  },
   responses: {
     200: {
       content: {
@@ -30,13 +44,14 @@ const listBookmarkRoute = createRoute({
 
 app.openapi(listBookmarkRoute, async (c) => {
   const user = c.get('user');
-  const bookmarks = await bookmarkService.list(user.id);
+  const { page, limit } = c.req.valid('query');
+  const { bookmarks, total } = await bookmarkService.list(user.id, page, limit);
 
   return c.json({
-    bookmarks: bookmarks,
-    total: bookmarks.length,
-    page: 1,
-    limit: bookmarks.length,
+    bookmarks,
+    total,
+    page,
+    limit,
   });
 });
 

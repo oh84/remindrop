@@ -32,9 +32,12 @@ describe('Bookmark Routes', () => {
   });
 
   describe('GET /', () => {
-    it('should return list of bookmarks', async () => {
-      const mockBookmarks = [{ id: '1', title: 'Test', url: 'https://test.com' }];
-      vi.mocked(bookmarkService.list).mockResolvedValue(mockBookmarks as any);
+    it('should return list of bookmarks with pagination', async () => {
+      const mockBookmarks = [{ id: '1', title: 'Test', url: 'https://test.com' }] as any;
+      vi.mocked(bookmarkService.list).mockResolvedValue({
+        bookmarks: mockBookmarks,
+        total: 1,
+      });
 
       const res = await app.request('/', {
         method: 'GET',
@@ -44,6 +47,27 @@ describe('Bookmark Routes', () => {
       const body = await res.json() as any;
       expect(body.bookmarks).toEqual(mockBookmarks);
       expect(body.total).toBe(1);
+      expect(body.page).toBe(1);
+      expect(body.limit).toBe(20);
+    });
+
+    it('should accept page and limit query parameters', async () => {
+      const mockBookmarks = [{ id: '1', title: 'Test', url: 'https://test.com' }] as any;
+      vi.mocked(bookmarkService.list).mockResolvedValue({
+        bookmarks: mockBookmarks,
+        total: 50,
+      });
+
+      const res = await app.request('/?page=2&limit=10', {
+        method: 'GET',
+      });
+
+      expect(res.status).toBe(200);
+      expect(bookmarkService.list).toHaveBeenCalledWith('user-123', 2, 10);
+      const body = await res.json() as any;
+      expect(body.page).toBe(2);
+      expect(body.limit).toBe(10);
+      expect(body.total).toBe(50);
     });
   });
 
