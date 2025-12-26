@@ -475,7 +475,7 @@ export type CreateBookmarkInput = z.infer<typeof CreateBookmarkSchema>;
 
 **Folder structure:**
 - Apps: `apps/web`, `apps/api`, `apps/extension`
-- Packages: `packages/ui`, `packages/types`, `packages/config`, `packages/utils`
+- Packages: `packages/ui`, `packages/types`, `packages/config`
 - Features: `apps/web/src/features/bookmarks/`
 
 ---

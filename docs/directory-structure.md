@@ -10,9 +10,7 @@ remindrop/                       # モノレポルート
 │   └── extension/              # Plasmo ブラウザ拡張 (Phase 5)
 ├── packages/                    # 共有パッケージ
 │   ├── ui/                     # 共有UIコンポーネント (shadcn/ui)
-│   ├── db/                     # Drizzle ORM スキーマ
 │   ├── types/                  # TypeScript型定義
-│   ├── utils/                  # ユーティリティ関数
 │   └── config/                 # ESLint/TypeScript設定
 ├── infra/                       # AWS CDKインフラコード (Phase 3)
 ├── docs/                        # ドキュメント
@@ -44,15 +42,9 @@ apps/web/
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── components/             # アプリケーション固有のコンポーネント
-│   │   ├── ui/                 # shadcn/ui (カスタマイズ可能)
-│   │   ├── layout/
-│   │   └── providers/
 │   ├── features/               # 機能ごとのモジュール (Bulletproof React)
 │   │   ├── auth/
-│   │   │   ├── api/
 │   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── types/
 │   │   │   └── index.ts        # Public API
 │   │   ├── bookmarks/
 │   │   │   ├── api/
@@ -63,8 +55,9 @@ apps/web/
 │   │   └── tags/
 │   ├── lib/                    # ユーティリティ
 │   ├── hooks/                  # グローバルhooks
-│   ├── styles/
-│   └── env.ts                  # 環境変数バリデーション
+│   ├── providers/              # プロバイダー（Theme等）
+│   ├── env.ts                  # 環境変数バリデーション
+│   └── styles/
 ├── .env
 └── package.json
 ```
@@ -109,7 +102,6 @@ export type { Bookmark } from './types';
 
 - **アプリ固有のコンポーネント**: `apps/web/src/components/`
 - **複数アプリで共有**: `packages/ui/src/components/`
-- **shadcn/ui コンポーネント**: `apps/web/src/components/ui/` (カスタマイズ可能)
 
 ---
 
@@ -135,8 +127,13 @@ apps/api/
 │   │   ├── schema/
 │   │   └── index.ts
 │   ├── lib/                     # 共有ライブラリ
+│   ├── test-utils/               # テストユーティリティ
+│   │   ├── db.ts
+│   │   ├── db-container.ts
+│   │   └── global-setup.ts
 │   ├── env.ts                   # 環境変数バリデーション
 │   └── index.ts                 # エントリーポイント
+├── migrations/                  # マイグレーションファイル
 ├── drizzle.config.ts            # Drizzle設定
 ├── .env                         # 環境変数
 ├── .env.example                 # 環境変数サンプル
@@ -290,7 +287,7 @@ packages/types/
 
 **Single Source of Truth:**
 - APIのレスポンス型はここで定義
-- データベーススキーマから型を生成する場合は`@repo/db`から再エクスポート
+- データベーススキーマから型を生成する場合は`apps/api/src/db/schema`から再エクスポート
 
 **例: api/bookmark.ts**
 ```typescript
@@ -311,45 +308,16 @@ export type UpdateBookmarkInput = Partial<CreateBookmarkInput>;
 
 ---
 
-## 7. packages/utils (共有ユーティリティ)
+## 7. 環境変数管理
 
-### 7.1 全体構成
+### 7.1 環境変数ファイルの配置
 
-```
-packages/utils/
-├── src/
-│   ├── date.ts                  # 日付処理
-│   ├── string.ts                # 文字列処理
-│   ├── url.ts                   # URL処理
-│   ├── validation.ts            # バリデーション
-│   └── index.ts
-├── package.json
-└── tsconfig.json
-```
-
-### 7.2 配置ルール
-
-**このパッケージに配置:**
-- 複数アプリで共有する純粋関数
-- フレームワーク非依存のロジック
-
-**配置しない:**
-- React hooks → `@repo/ui` or アプリ固有の`hooks/`
-- APIクライアント → 各アプリの`lib/`
-
----
-
-## 8. 環境変数管理
-
-### 8.1 環境変数ファイルの配置
-
-各パッケージは独自の`.env`ファイルを持ちます:
+各アプリは独自の`.env`ファイルを持ちます:
 - ルート/.env (Docker Compose用)
 - apps/web/.env
 - apps/api/.env
-- packages/db/.env
 
-### 8.2 環境変数バリデーション
+### 7.2 環境変数バリデーション
 
 **Zodスキーマによる検証:**
 - `apps/web/src/env.ts` - Next.js環境変数
@@ -379,7 +347,7 @@ if (!parsed.success) {
 export const env = parsed.data;
 ```
 
-### 8.3 環境変数読み込み方法
+### 7.3 環境変数読み込み方法
 
 - **開発時**: `tsx --env-file=.env` でスクリプト実行
 - **Next.js**: 自動で`.env`ファイルを読み込み
@@ -387,24 +355,15 @@ export const env = parsed.data;
 
 ---
 
-## 9. パッケージ間の依存関係
+## 8. パッケージ間の依存関係
 
 ```
 apps/web
   ├─→ @repo/ui
-  ├─→ @repo/types
-  └─→ @repo/utils
-
-apps/api
-  ├─→ @repo/db
-  ├─→ @repo/types
-  └─→ @repo/utils
-
-packages/db
   └─→ @repo/types
 
-packages/ui
-  └─→ @repo/utils
+apps/api
+  └─→ @repo/types
 ```
 
 **依存関係のルール:**
@@ -414,9 +373,9 @@ packages/ui
 
 ---
 
-## 10. 開発ワークフロー
+## 9. 開発ワークフロー
 
-### 10.1 初期セットアップ
+### 9.1 初期セットアップ
 
 ```bash
 # リポジトリのクローン
@@ -427,7 +386,6 @@ cd remindrop
 cp .env.example .env
 cp apps/web/.env.example apps/web/.env
 cp apps/api/.env.example apps/api/.env
-cp packages/db/.env.example packages/db/.env
 
 # 依存関係のインストール
 pnpm install
@@ -436,15 +394,13 @@ pnpm install
 pnpm db:up
 
 # データベースマイグレーション
-cd packages/db
-pnpm db:migrate
-cd ../..
+pnpm -F api db:migrate
 
 # 開発サーバー起動
 pnpm dev
 ```
 
-### 10.2 日常的な開発
+### 9.2 日常的な開発
 
 ```bash
 # 開発サーバー起動（PostgreSQL自動起動）
@@ -467,13 +423,14 @@ pnpm db:generate        # マイグレーションファイル生成
 pnpm db:migrate         # マイグレーション実行
 ```
 
-### 10.3 新機能追加の流れ
+### 9.3 新機能追加の流れ
 
-1. **DBスキーマ定義** (`packages/db/src/schema/`)
-2. **マイグレーション生成** (`pnpm db:generate`)
-3. **型定義** (`packages/types/src/`)
-4. **APIルート実装** (`apps/api/src/routes/`)
-5. **Webフロントエンド実装**:
+1. **DBスキーマ定義** (`apps/api/src/db/schema/`)
+2. **マイグレーション生成** (`pnpm -F api db:generate`)
+3. **マイグレーション実行** (`pnpm -F api db:migrate`)
+4. **型定義** (`packages/types/src/`)
+5. **APIルート実装** (`apps/api/src/features/[feature]/route.ts`)
+6. **Webフロントエンド実装**:
    - feature作成 (`apps/web/src/features/`)
    - APIクライアント (`feature/api/`)
    - hooks (`feature/hooks/`)
@@ -482,23 +439,23 @@ pnpm db:migrate         # マイグレーション実行
 
 ---
 
-## 11. 技術スタック
+## 10. 技術スタック
 
-### 11.1 フロントエンド
+### 10.1 フロントエンド
 - **Next.js 15**: App Router、React Server Components
 - **React 19**: 最新機能活用
 - **TypeScript**: 型安全性
 - **Tailwind CSS v4**: スタイリング
 - **shadcn/ui**: UIコンポーネント
 
-### 11.2 バックエンド
+### 10.2 バックエンド
 - **Hono**: 高速軽量フレームワーク
 - **@hono/zod-openapi**: OpenAPI準拠のAPI設計
 - **Drizzle ORM**: 型安全なORM
 - **Better Auth**: 認証ライブラリ
 - **PostgreSQL**: データベース
 
-### 11.3 開発ツール
+### 10.3 開発ツール
 - **Turborepo**: モノレポビルドシステム
 - **pnpm**: パッケージマネージャー
 - **Vitest**: テストフレームワーク
@@ -507,7 +464,7 @@ pnpm db:migrate         # マイグレーション実行
 
 ---
 
-## 12. 今後の拡張予定
+## 11. 今後の拡張予定
 
 ### Phase 3: AWS デプロイ
 - **RDS**: PostgreSQL本番環境

@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@repo/ui', '@repo/utils', '@repo/types'],
+  transpilePackages: ['@repo/ui', '@repo/types'],
   eslint: {
     ignoreDuringBuilds: false,
   },

@@ -33,8 +33,7 @@ remindrop/
 ├── packages/
 │   ├── ui/               # 共有UIコンポーネント
 │   ├── types/            # TypeScript型定義
-│   ├── config/           # 共通設定
-│   └── utils/            # ユーティリティ
+│   └── config/           # 共通設定
 ├── infra/                # AWS CDK
 └── docs/                 # ドキュメント
 ```

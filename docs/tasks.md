@@ -32,11 +32,10 @@
 ### Task 1.2: 共有パッケージのセットアップ ✅
 - [x] packages/types 作成
 - [x] packages/config 作成（ESLint, TypeScript）
-- [x] packages/utils 作成
 
 ### Task 1.3: データベースセットアップ ✅
 - [x] Drizzle ORM セットアップ
-- [x] packages/db 作成
+- [x] apps/api/src/db セットアップ
 - [x] ローカルPostgreSQL接続確認
 - [x] 環境変数設定（DATABASE_URL）
 
@@ -68,12 +67,12 @@
 
 ### Task 2.1: データベーススキーマ定義 ✅
 - [x] Drizzle ORM セットアップ（Task 1.3で完了）
-- [x] packages/db 作成
+- [x] apps/api/src/db セットアップ
 - [x] Userスキーマ定義（users, sessions, accounts, verifications）
 - [x] Bookmarkスキーマ定義（bookmarks, tags, bookmark_tags）
 - [x] User Settingsスキーマ定義
 - [x] リレーション定義（外部キー、インデックス）
-- [x] マイグレーション生成・実行（0000_kind_maginty.sql）
+- [x] マイグレーション生成・実行（0000_initial_migration.sql）
 
 ### Task 2.2: 認証機能 ✅
 - [x] BetterAuth セットアップ
