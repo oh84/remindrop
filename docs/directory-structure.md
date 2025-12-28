@@ -42,20 +42,25 @@ apps/web/
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── components/             # アプリケーション固有のコンポーネント
+│   ├── api/                    # Orval生成のAPIクライアント（自動生成）
+│   │   ├── bookmarks.ts        # ブックマークAPIクライアント
+│   │   ├── system.ts           # システムAPIクライアント
+│   │   ├── generated.schemas.ts # OpenAPIから生成された型定義
+│   │   └── mutator/
+│   │       └── custom-instance.ts # カスタムfetchインスタンス
 │   ├── features/               # 機能ごとのモジュール (Bulletproof React)
 │   │   ├── auth/
 │   │   │   ├── components/
 │   │   │   └── index.ts        # Public API
 │   │   ├── bookmarks/
-│   │   │   ├── api/
 │   │   │   ├── components/
-│   │   │   ├── hooks/
+│   │   │   ├── hooks/          # React Queryフック（Orval生成hooksを使用）
 │   │   │   └── index.ts
 │   │   ├── search/
 │   │   └── tags/
 │   ├── lib/                    # ユーティリティ
 │   ├── hooks/                  # グローバルhooks
-│   ├── providers/              # プロバイダー（Theme等）
+│   ├── providers/              # プロバイダー（Theme、QueryClient等）
 │   ├── env.ts                  # 環境変数バリデーション
 │   └── styles/
 ├── .env

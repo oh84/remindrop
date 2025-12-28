@@ -79,6 +79,8 @@ graph TB
 | TailwindCSS | 4.x | スタイリング（@tailwindcss/postcss） |
 | shadcn/ui | Latest | UIコンポーネントライブラリ |
 | React Query | 5.x | サーバー状態管理・データフェッチング |
+| React Query Devtools | 5.x | 開発時のクエリ状態可視化 |
+| Orval | 7.x | OpenAPIから型安全なAPIクライアント生成 |
 | Zustand | 4.x | クライアント状態管理(軽量・オプション) |
 | next-themes | Latest | ダークモード対応 |
 
@@ -1046,16 +1048,25 @@ sequenceDiagram
       LoginForm.tsx
       SignupForm.tsx
 
+/api                    # Orval生成のAPIクライアント（自動生成）
+  bookmarks.ts          # ブックマークAPIクライアント
+  system.ts             # システムAPIクライアント
+  generated.schemas.ts  # OpenAPIから生成された型定義
+  /mutator
+    custom-instance.ts  # カスタムfetchインスタンス（認証Cookie送信）
+
 /lib
-  /api                  # API Client
-    bookmarks.ts
-    tags.ts
-    settings.ts
-  /hooks                # Custom Hooks
-    useBookmarks.ts
-    useTags.ts
   auth.ts               # BetterAuth設定
   utils.ts              # ユーティリティ
+
+/features
+  /bookmarks
+    /components
+      BookmarkCard.tsx
+      BookmarkList.tsx
+    /hooks
+      use-bookmarks.ts  # React Queryフック（Orval生成hooksを直接使用）
+    index.ts            # Public API
 ```
 
 #### 主要コンポーネント
