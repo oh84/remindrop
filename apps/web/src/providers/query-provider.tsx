@@ -57,6 +57,17 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
+      {/*
+        React Query Devtools
+
+        From the official documentation:
+        - "For Next 13+ App Dir you must install it as a dev dependency for it to work."
+        - "By default, React Query Devtools are only included in bundles when
+          `process.env.NODE_ENV === 'development'`, so you don't need to worry about
+          excluding them during a production build."
+
+        See: https://tanstack.com/query/latest/docs/react/devtools
+      */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
