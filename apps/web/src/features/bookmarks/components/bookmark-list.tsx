@@ -40,7 +40,7 @@ export function BookmarkList({
     );
   }
 
-  if (!data || data.bookmarks.length === 0) {
+  if (!data || data.total === 0) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
         <p className="text-muted-foreground">ブックマークがありません</p>
@@ -55,6 +55,9 @@ export function BookmarkList({
   const totalPages = Math.ceil(total / currentLimit);
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
+  const isOutOfRange = currentPage > totalPages && totalPages > 0;
+  const startIndex = isOutOfRange ? 0 : (currentPage - 1) * currentLimit + 1;
+  const endIndex = isOutOfRange ? 0 : Math.min(currentPage * currentLimit, total);
 
   const handlePrevPage = () => {
     if (hasPrevPage && onPageChange) {
@@ -68,45 +71,67 @@ export function BookmarkList({
     }
   };
 
+  const handleGoToLastPage = () => {
+    if (onPageChange && totalPages > 0) {
+      onPageChange(totalPages);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="grid gap-4">
-        {bookmarks.map((bookmark) => (
-          <BookmarkCard key={bookmark.id} bookmark={bookmark} />
-        ))}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t pt-4">
-          <div className="text-sm text-muted-foreground">
-            {total}件中 {((currentPage - 1) * currentLimit) + 1}-
-            {Math.min(currentPage * currentLimit, total)}件を表示
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevPage}
-              disabled={!hasPrevPage}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              前へ
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              {currentPage} / {totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={!hasNextPage}
-            >
-              次へ
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+      {isOutOfRange ? (
+        <div className="rounded-lg border border-dashed p-12 text-center">
+          <p className="text-muted-foreground">
+            指定されたページは存在しません
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            最後のページに移動しますか？
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGoToLastPage}
+            className="mt-4"
+          >
+            最後のページへ ({totalPages}ページ目)
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {bookmarks.map((bookmark) => (
+            <BookmarkCard key={bookmark.id} bookmark={bookmark} />
+          ))}
         </div>
       )}
+
+      <div className="flex items-center justify-between border-t pt-4">
+        <div className="text-sm text-muted-foreground">
+          {total}件中{' '}{isOutOfRange ? '0' : `${startIndex}-${endIndex}`}件を表示
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrevPage}
+            disabled={!hasPrevPage}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            前へ
+          </Button>
+          <div className="text-sm text-muted-foreground">
+            {currentPage} / {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={!hasNextPage}
+          >
+            次へ
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
