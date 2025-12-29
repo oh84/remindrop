@@ -397,10 +397,10 @@ import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 
 // スキーマ定義
 const BookmarkSchema = z.object({
-  id: z.string().uuid(),
-  url: z.string().url(),
+  id: z.uuid(),
+  url: z.url(),
   title: z.string(),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 })
 
 // ルート定義
@@ -412,7 +412,7 @@ const createBookmarkRoute = createRoute({
       content: {
         'application/json': {
           schema: z.object({
-            url: z.string().url(),
+            url: z.url(),
             title: z.string().optional(),
           }),
         },

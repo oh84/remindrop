@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   // Next.js Public Variables (available in browser)
-  NEXT_PUBLIC_API_URL: z.string().url(),
+  NEXT_PUBLIC_API_URL: z.url(),
 });
 
 // Validate environment variables at build time
@@ -12,7 +12,7 @@ const parsed = envSchema.safeParse({
 
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');
-  console.error(JSON.stringify(parsed.error.format(), null, 2));
+  console.error(JSON.stringify(z.treeifyError(parsed.error), null, 2));
   throw new Error('Invalid environment variables');
 }
 

@@ -5,7 +5,7 @@ const app = new OpenAPIHono();
 // Health check schema
 const HealthCheckSchema = z.object({
   status: z.string().openapi({ example: 'ok' }),
-  timestamp: z.string().datetime().openapi({ example: '2024-01-01T00:00:00.000Z' }),
+  timestamp: z.iso.datetime().openapi({ example: '2024-01-01T00:00:00.000Z' }),
   service: z.string().openapi({ example: 'remindrop-api' }),
   version: z.string().openapi({ example: '1.0.0' }),
 });

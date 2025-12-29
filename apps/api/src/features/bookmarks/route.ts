@@ -99,7 +99,7 @@ const getBookmarkRoute = createRoute({
   summary: 'Get bookmark by ID',
   request: {
     params: z.object({
-      id: z.string().uuid(),
+      id: z.uuid(),
     }),
   },
   responses: {
@@ -137,7 +137,7 @@ const updateBookmarkRoute = createRoute({
   summary: 'Update bookmark',
   request: {
     params: z.object({
-      id: z.string().uuid(),
+      id: z.uuid(),
     }),
     body: {
       content: {
@@ -184,7 +184,7 @@ const deleteBookmarkRoute = createRoute({
   summary: 'Delete bookmark',
   request: {
     params: z.object({
-      id: z.string().uuid(),
+      id: z.uuid(),
     }),
   },
   responses: {
