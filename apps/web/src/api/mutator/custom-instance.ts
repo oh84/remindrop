@@ -57,10 +57,8 @@ export const customInstance: CustomInstance = async <T>(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      message: `API Error: ${response.status} ${response.statusText}`,
-    }));
-    throw new Error(error.message || `API Error: ${response.status}`);
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message ?? `API Error: ${response.status} ${response.statusText}`);
   }
 
   // 204 No Contentの場合は空のオブジェクトを返す
