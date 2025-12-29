@@ -44,16 +44,16 @@ export const customInstance: CustomInstance = async <T>(
   }
 
   const response = await fetch(url.toString(), {
+    ...options, // 先にoptionsを展開
     method: config.method,
     credentials: 'include', // Cookieを自動的に送信
     headers: {
-      'Content-Type': 'application/json',
+      ...options?.headers, // 先にoptionsを展開
       ...config.headers,
-      ...options?.headers,
+      'Content-Type': 'application/json',
     },
-    body: config.data ? JSON.stringify(config.data) : undefined,
-    signal: config.signal,
-    ...options,
+    body: config.data ? JSON.stringify(config.data) : options?.body,
+    signal: config.signal ?? options?.signal,
   });
 
   if (!response.ok) {
