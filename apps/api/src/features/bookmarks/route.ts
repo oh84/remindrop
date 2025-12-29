@@ -103,6 +103,7 @@ const getBookmarkRoute = createRoute({
         param: {
           name: 'id',
           in: 'path',
+          required: true,
         },
         example: '123e4567-e89b-12d3-a456-426614174000',
         description: 'Bookmark ID',
@@ -145,7 +146,11 @@ const updateBookmarkRoute = createRoute({
   request: {
     params: z.object({
       id: z.uuid().openapi({
-        param: { name: 'id', in: 'path' },
+        param: {
+          name: 'id',
+          in: 'path',
+          required: true,
+        },
         example: '123e4567-e89b-12d3-a456-426614174000',
         description: 'Bookmark ID',
       }),
@@ -199,6 +204,7 @@ const deleteBookmarkRoute = createRoute({
         param: {
           name: 'id',
           in: 'path',
+          required: true,
         },
         example: '123e4567-e89b-12d3-a456-426614174000',
         description: 'Bookmark ID',
