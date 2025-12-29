@@ -243,34 +243,38 @@ export const usePostApiBookmarks = <TError = unknown, TContext = unknown>(
  * @summary Get bookmark by ID
  */
 export const getApiBookmarksId = (
+  id: string,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
   return customInstance<GetApiBookmarksId200>(
-    { url: `/api/bookmarks/:id`, method: 'GET', signal },
+    { url: `/api/bookmarks/${id}`, method: 'GET', signal },
     options
   );
 };
 
-export const getGetApiBookmarksIdQueryKey = () => {
-  return [`/api/bookmarks/:id`] as const;
+export const getGetApiBookmarksIdQueryKey = (id?: string) => {
+  return [`/api/bookmarks/${id}`] as const;
 };
 
 export const getGetApiBookmarksIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiBookmarksId>>,
   TError = void,
->(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiBookmarksId>>, TError, TData>>;
-  request?: SecondParameter<typeof customInstance>;
-}) => {
+>(
+  id: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiBookmarksId>>, TError, TData>>;
+    request?: SecondParameter<typeof customInstance>;
+  }
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetApiBookmarksIdQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetApiBookmarksIdQueryKey(id);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiBookmarksId>>> = ({ signal }) =>
-    getApiBookmarksId(requestOptions, signal);
+    getApiBookmarksId(id, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getApiBookmarksId>>,
     TError,
     TData
@@ -286,6 +290,7 @@ export function useGetApiBookmarksId<
   TData = Awaited<ReturnType<typeof getApiBookmarksId>>,
   TError = void,
 >(
+  id: string,
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiBookmarksId>>, TError, TData>> &
       Pick<
@@ -304,6 +309,7 @@ export function useGetApiBookmarksId<
   TData = Awaited<ReturnType<typeof getApiBookmarksId>>,
   TError = void,
 >(
+  id: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiBookmarksId>>, TError, TData>> &
       Pick<
@@ -322,6 +328,7 @@ export function useGetApiBookmarksId<
   TData = Awaited<ReturnType<typeof getApiBookmarksId>>,
   TError = void,
 >(
+  id: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiBookmarksId>>, TError, TData>>;
     request?: SecondParameter<typeof customInstance>;
@@ -336,13 +343,14 @@ export function useGetApiBookmarksId<
   TData = Awaited<ReturnType<typeof getApiBookmarksId>>,
   TError = void,
 >(
+  id: string,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiBookmarksId>>, TError, TData>>;
     request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetApiBookmarksIdQueryOptions(options);
+  const queryOptions = getGetApiBookmarksIdQueryOptions(id, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
@@ -357,12 +365,13 @@ export function useGetApiBookmarksId<
  * @summary Update bookmark
  */
 export const patchApiBookmarksId = (
+  id: string,
   patchApiBookmarksIdBody: PatchApiBookmarksIdBody,
   options?: SecondParameter<typeof customInstance>
 ) => {
   return customInstance<PatchApiBookmarksId200>(
     {
-      url: `/api/bookmarks/:id`,
+      url: `/api/bookmarks/${id}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: patchApiBookmarksIdBody,
@@ -375,14 +384,14 @@ export const getPatchApiBookmarksIdMutationOptions = <TError = void, TContext = 
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof patchApiBookmarksId>>,
     TError,
-    { data: PatchApiBookmarksIdBody },
+    { id: string; data: PatchApiBookmarksIdBody },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof patchApiBookmarksId>>,
   TError,
-  { data: PatchApiBookmarksIdBody },
+  { id: string; data: PatchApiBookmarksIdBody },
   TContext
 > => {
   const mutationKey = ['patchApiBookmarksId'];
@@ -394,11 +403,11 @@ export const getPatchApiBookmarksIdMutationOptions = <TError = void, TContext = 
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof patchApiBookmarksId>>,
-    { data: PatchApiBookmarksIdBody }
+    { id: string; data: PatchApiBookmarksIdBody }
   > = (props) => {
-    const { data } = props ?? {};
+    const { id, data } = props ?? {};
 
-    return patchApiBookmarksId(data, requestOptions);
+    return patchApiBookmarksId(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -418,7 +427,7 @@ export const usePatchApiBookmarksId = <TError = void, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof patchApiBookmarksId>>,
       TError,
-      { data: PatchApiBookmarksIdBody },
+      { id: string; data: PatchApiBookmarksIdBody },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -427,7 +436,7 @@ export const usePatchApiBookmarksId = <TError = void, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof patchApiBookmarksId>>,
   TError,
-  { data: PatchApiBookmarksIdBody },
+  { id: string; data: PatchApiBookmarksIdBody },
   TContext
 > => {
   const mutationOptions = getPatchApiBookmarksIdMutationOptions(options);
@@ -437,9 +446,12 @@ export const usePatchApiBookmarksId = <TError = void, TContext = unknown>(
 /**
  * @summary Delete bookmark
  */
-export const deleteApiBookmarksId = (options?: SecondParameter<typeof customInstance>) => {
+export const deleteApiBookmarksId = (
+  id: string,
+  options?: SecondParameter<typeof customInstance>
+) => {
   return customInstance<DeleteApiBookmarksId200>(
-    { url: `/api/bookmarks/:id`, method: 'DELETE' },
+    { url: `/api/bookmarks/${id}`, method: 'DELETE' },
     options
   );
 };
@@ -451,14 +463,14 @@ export const getDeleteApiBookmarksIdMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteApiBookmarksId>>,
     TError,
-    void,
+    { id: string },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deleteApiBookmarksId>>,
   TError,
-  void,
+  { id: string },
   TContext
 > => {
   const mutationKey = ['deleteApiBookmarksId'];
@@ -470,9 +482,11 @@ export const getDeleteApiBookmarksIdMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deleteApiBookmarksId>>,
-    void
-  > = () => {
-    return deleteApiBookmarksId(requestOptions);
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteApiBookmarksId(id, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -492,13 +506,18 @@ export const useDeleteApiBookmarksId = <TError = void, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteApiBookmarksId>>,
       TError,
-      void,
+      { id: string },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient
-): UseMutationResult<Awaited<ReturnType<typeof deleteApiBookmarksId>>, TError, void, TContext> => {
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteApiBookmarksId>>,
+  TError,
+  { id: string },
+  TContext
+> => {
   const mutationOptions = getDeleteApiBookmarksIdMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
