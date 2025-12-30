@@ -19,14 +19,14 @@
   "dependencies": {
     "@hono/node-server": "^1.13.7",
     "@hono/swagger-ui": "^0.4.1",
-    "@hono/zod-openapi": "^0.18.4",
+    "@hono/zod-openapi": "^1.2.0",
     "@repo/types": "workspace:*",
     "@scalar/hono-api-reference": "^0.9.30",
     "better-auth": "^1.4.6",
     "drizzle-orm": "^0.37.0",
     "hono": "^4.6.14",
     "postgres": "^3.4.7",
-    "zod": "^3.24.2"
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",

@@ -93,13 +93,15 @@
 - [x] エラーハンドリング
 - [x] OpenAPI仕様書の確認（/api/docs）
 
-### Task 2.4: ブックマーク一覧画面
-- [ ] React Query セットアップ
-- [ ] BookmarkCard コンポーネント
-- [ ] BookmarkList コンポーネント
-- [ ] ページネーション
-- [ ] ローディング状態
-- [ ] エラー状態
+### Task 2.4: ブックマーク一覧画面 ✅
+- [x] React Query セットアップ
+- [x] Orval セットアップ（OpenAPIから型安全なAPIクライアント生成）
+- [x] BookmarkCard コンポーネント
+- [x] BookmarkList コンポーネント
+- [x] ページネーション
+- [x] ローディング状態
+- [x] エラー状態
+- [x] React Query Devtools 追加
 
 ### Task 2.5: ブックマーク作成・編集画面
 - [ ] BookmarkForm コンポーネント

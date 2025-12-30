@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   // Database
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.url(),
 
   // API Server
-  API_URL: z.string().url(),
+  API_URL: z.url(),
   API_PORT: z.string().transform(Number).pipe(z.number().positive()),
 
   // BetterAuth
@@ -14,7 +14,7 @@ const envSchema = z.object({
   }),
 
   // Web Application
-  WEB_URL: z.string().url(),
+  WEB_URL: z.url(),
 });
 
 // 起動時に環境変数を検証
@@ -22,7 +22,7 @@ const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');
-  console.error(JSON.stringify(parsed.error.format(), null, 2));
+  console.error(JSON.stringify(z.treeifyError(parsed.error), null, 2));
   process.exit(1);
 }
 

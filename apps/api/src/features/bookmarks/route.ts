@@ -94,12 +94,20 @@ app.openapi(createBookmarkRoute, async (c) => {
 // Get Bookmark
 const getBookmarkRoute = createRoute({
   method: 'get',
-  path: '/:id',
+  path: '/{id}',
   tags: ['Bookmarks'],
   summary: 'Get bookmark by ID',
   request: {
     params: z.object({
-      id: z.string().uuid(),
+      id: z.uuid().openapi({
+        param: {
+          name: 'id',
+          in: 'path',
+          required: true,
+        },
+        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'Bookmark ID',
+      }),
     }),
   },
   responses: {
@@ -132,12 +140,20 @@ app.openapi(getBookmarkRoute, async (c) => {
 // Update Bookmark
 const updateBookmarkRoute = createRoute({
   method: 'patch',
-  path: '/:id',
+  path: '/{id}',
   tags: ['Bookmarks'],
   summary: 'Update bookmark',
   request: {
     params: z.object({
-      id: z.string().uuid(),
+      id: z.uuid().openapi({
+        param: {
+          name: 'id',
+          in: 'path',
+          required: true,
+        },
+        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'Bookmark ID',
+      }),
     }),
     body: {
       content: {
@@ -179,12 +195,20 @@ app.openapi(updateBookmarkRoute, async (c) => {
 // Delete Bookmark
 const deleteBookmarkRoute = createRoute({
   method: 'delete',
-  path: '/:id',
+  path: '/{id}',
   tags: ['Bookmarks'],
   summary: 'Delete bookmark',
   request: {
     params: z.object({
-      id: z.string().uuid(),
+      id: z.uuid().openapi({
+        param: {
+          name: 'id',
+          in: 'path',
+          required: true,
+        },
+        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'Bookmark ID',
+      }),
     }),
   },
   responses: {

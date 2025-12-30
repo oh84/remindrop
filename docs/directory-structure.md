@@ -42,20 +42,25 @@ apps/web/
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── components/             # アプリケーション固有のコンポーネント
+│   ├── api/                    # Orval生成のAPIクライアント（自動生成）
+│   │   ├── bookmarks.ts        # ブックマークAPIクライアント
+│   │   ├── system.ts           # システムAPIクライアント
+│   │   ├── generated.schemas.ts # OpenAPIから生成された型定義
+│   │   └── mutator/
+│   │       └── custom-instance.ts # カスタムfetchインスタンス
 │   ├── features/               # 機能ごとのモジュール (Bulletproof React)
 │   │   ├── auth/
 │   │   │   ├── components/
 │   │   │   └── index.ts        # Public API
 │   │   ├── bookmarks/
-│   │   │   ├── api/
 │   │   │   ├── components/
-│   │   │   ├── hooks/
+│   │   │   ├── hooks/          # React Queryフック（Orval生成hooksを使用）
 │   │   │   └── index.ts
 │   │   ├── search/
 │   │   └── tags/
 │   ├── lib/                    # ユーティリティ
 │   ├── hooks/                  # グローバルhooks
-│   ├── providers/              # プロバイダー（Theme等）
+│   ├── providers/              # プロバイダー（Theme、QueryClient等）
 │   ├── env.ts                  # 環境変数バリデーション
 │   └── styles/
 ├── .env
@@ -154,9 +159,9 @@ apps/api/
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 
 const BookmarkSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string(),
-  url: z.string().url(),
+  url: z.url(),
   // ...
 });
 
@@ -329,18 +334,18 @@ export type UpdateBookmarkInput = Partial<CreateBookmarkInput>;
 import { z } from 'zod';
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().url(),
-  API_URL: z.string().url(),
+  DATABASE_URL: z.url(),
+  API_URL: z.url(),
   API_PORT: z.string().transform(Number).pipe(z.number().positive()),
   BETTER_AUTH_SECRET: z.string().min(32),
-  WEB_URL: z.string().url(),
+  WEB_URL: z.url(),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');
-  console.error(JSON.stringify(parsed.error.format(), null, 2));
+  console.error(JSON.stringify(z.treeifyError(parsed.error), null, 2));
   process.exit(1);
 }
 
