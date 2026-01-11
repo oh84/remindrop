@@ -9,6 +9,18 @@ export {
   CardContent,
 } from './components/card';
 export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogTrigger,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from './components/dialog';
+export {
   Form,
   FormItem,
   FormLabel,
@@ -20,3 +32,4 @@ export {
 export { Input } from './components/input';
 export { Label } from './components/label';
 export { Separator } from './components/separator';
+export { Toaster, toast } from './components/sonner';

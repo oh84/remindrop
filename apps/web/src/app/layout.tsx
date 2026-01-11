@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@repo/ui/globals.css';
+import { Toaster } from '@repo/ui';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { QueryProvider } from '@/providers/query-provider';
 
@@ -24,6 +25,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster richColors position="top-right" />
           </ThemeProvider>
         </QueryProvider>
       </body>

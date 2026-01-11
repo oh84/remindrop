@@ -103,11 +103,11 @@
 - [x] エラー状態
 - [x] React Query Devtools 追加
 
-### Task 2.5: ブックマーク作成・編集画面
-- [ ] BookmarkForm コンポーネント
-- [ ] バリデーション（Zod）
-- [ ] 楽観的更新（React Query）
-- [ ] トースト通知
+### Task 2.5: ブックマーク作成・編集画面 ✅
+- [x] BookmarkForm コンポーネント
+- [x] バリデーション（Zod）
+- [x] React Query mutation
+- [x] トースト通知
 
 ### Task 2.6: 検索・フィルター機能
 - [ ] 検索API実装
