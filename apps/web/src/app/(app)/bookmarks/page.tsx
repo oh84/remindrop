@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { z } from 'zod';
-import { BookmarkList } from '@/features/bookmarks';
+import { Button } from '@repo/ui';
+import { Plus } from 'lucide-react';
+import { BookmarkList, CreateBookmarkDialog } from '@/features/bookmarks';
 
 const pageSchema = z.coerce
   .number()
@@ -20,6 +23,7 @@ const limitSchema = z.coerce
 export default function BookmarksPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // URLパラメータを検証してクランプ（無効な値でAPIリクエストを送信しないように）
   const pageResult = pageSchema.safeParse(searchParams.get('page'));
@@ -58,13 +62,23 @@ export default function BookmarksPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-        ブックマーク
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          ブックマーク
+        </h1>
+        <Button onClick={() => setIsCreateOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          追加
+        </Button>
+      </div>
       <BookmarkList
         page={page}
         limit={limit}
         onPageChange={handlePageChange}
+      />
+      <CreateBookmarkDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
       />
     </div>
   );
