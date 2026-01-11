@@ -77,7 +77,7 @@ export function BookmarkCard({ bookmark }: BookmarkCardProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  className="h-8 w-8 text-destructive"
                   onClick={() => setIsDeleteOpen(true)}
                   aria-label="削除"
                 >

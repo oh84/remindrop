@@ -25,13 +25,18 @@ export function CreateBookmarkDialog({
   const createMutation = useCreateBookmark();
 
   const handleSubmit = async (data: BookmarkFormData) => {
-    await createMutation.mutateAsync({
-      data: {
-        url: data.url,
-        title: data.title || undefined,
-      },
-    });
-    onOpenChange?.(false);
+    try {
+      await createMutation.mutateAsync({
+        data: {
+          url: data.url,
+          title: data.title || undefined,
+        },
+      });
+      onOpenChange?.(false);
+    } catch (error) {
+      // エラーは useCreateBookmark の onError で処理済み
+      console.error('ブックマーク作成エラー:', error);
+    }
   };
 
   const handleCancel = () => {

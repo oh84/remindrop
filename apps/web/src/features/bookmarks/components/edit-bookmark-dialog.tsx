@@ -28,14 +28,19 @@ export function EditBookmarkDialog({
   const updateMutation = useUpdateBookmark();
 
   const handleSubmit = async (data: BookmarkFormData) => {
-    await updateMutation.mutateAsync({
-      id: bookmark.id,
-      data: {
-        url: data.url,
-        title: data.title || undefined,
-      },
-    });
-    onOpenChange?.(false);
+    try {
+      await updateMutation.mutateAsync({
+        id: bookmark.id,
+        data: {
+          url: data.url,
+          title: data.title || undefined,
+        },
+      });
+      onOpenChange?.(false);
+    } catch (error) {
+      // エラーは useUpdateBookmark の onError で処理済み
+      console.error('ブックマーク更新エラー:', error);
+    }
   };
 
   const handleCancel = () => {

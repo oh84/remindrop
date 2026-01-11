@@ -29,8 +29,13 @@ export function DeleteBookmarkDialog({
   const deleteMutation = useDeleteBookmark();
 
   const handleDelete = async () => {
-    await deleteMutation.mutateAsync({ id: bookmark.id });
-    onOpenChange?.(false);
+    try {
+      await deleteMutation.mutateAsync({ id: bookmark.id });
+      onOpenChange?.(false);
+    } catch (error) {
+      // エラーは useDeleteBookmark の onError で処理済み
+      console.error('ブックマーク削除エラー:', error);
+    }
   };
 
   const handleCancel = () => {
