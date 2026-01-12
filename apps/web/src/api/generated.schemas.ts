@@ -32,6 +32,11 @@ export type GetApiBookmarksParams = {
    * Sort order (asc or desc)
    */
   order?: GetApiBookmarksOrder;
+  /**
+   * Search query for title or URL (case-insensitive)
+   * @maxLength 200
+   */
+  q?: string;
 };
 
 export type GetApiBookmarksSortBy =

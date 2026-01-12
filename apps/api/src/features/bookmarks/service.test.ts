@@ -51,8 +51,8 @@ describe('BookmarkService', () => {
         bookmarks: mockBookmarks,
         total: 2,
       });
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined });
-      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId);
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: undefined });
+      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId, undefined);
     });
 
     it('should calculate correct offset for pagination', async () => {
@@ -61,7 +61,7 @@ describe('BookmarkService', () => {
 
       await bookmarkService.list(mockUserId, { page: 3, limit: 10 });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 10, offset: 20, sortBy: undefined, order: undefined });
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 10, offset: 20, sortBy: undefined, order: undefined, query: undefined });
     });
 
     it('should handle page 1 correctly (offset 0)', async () => {
@@ -70,7 +70,7 @@ describe('BookmarkService', () => {
 
       await bookmarkService.list(mockUserId, { page: 1, limit: 20 });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined });
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: undefined });
     });
 
     it('should return empty list when user has no bookmarks', async () => {
@@ -91,7 +91,17 @@ describe('BookmarkService', () => {
 
       await bookmarkService.list(mockUserId, { page: 1, limit: 20, sortBy: 'updatedAt', order: 'asc' });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: 'updatedAt', order: 'asc' });
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: 'updatedAt', order: 'asc', query: undefined });
+    });
+
+    it('should pass search query to repository', async () => {
+      vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue([]);
+      vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(0);
+
+      await bookmarkService.list(mockUserId, { page: 1, limit: 20, query: 'example' });
+
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: 'example' });
+      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId, 'example');
     });
 
     it('should make parallel calls to repository for performance', async () => {

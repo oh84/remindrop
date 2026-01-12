@@ -11,6 +11,7 @@ interface BookmarkListProps {
   limit?: number;
   sortBy?: GetApiBookmarksSortBy;
   order?: GetApiBookmarksOrder;
+  query?: string;
   onPageChange?: (page: number) => void;
 }
 
@@ -19,9 +20,10 @@ export function BookmarkList({
   limit = 20,
   sortBy = 'createdAt',
   order = 'desc',
+  query,
   onPageChange,
 }: BookmarkListProps) {
-  const { data, isLoading, isError, error } = useBookmarks({ page, limit, sortBy, order });
+  const { data, isLoading, isError, error } = useBookmarks({ page, limit, sortBy, order, q: query });
 
   if (isLoading) {
     return (
@@ -48,9 +50,11 @@ export function BookmarkList({
   if (!data || data.total === 0) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
-        <p className="text-muted-foreground">ブックマークがありません</p>
+        <p className="text-muted-foreground">
+          {query ? '検索結果がありません' : 'ブックマークがありません'}
+        </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          新しいブックマークを追加してください
+          {query ? '別のキーワードで検索してください' : '新しいブックマークを追加してください'}
         </p>
       </div>
     );

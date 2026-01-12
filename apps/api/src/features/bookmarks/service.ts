@@ -8,15 +8,16 @@ export interface ListOptions {
   limit: number;
   sortBy?: BookmarkSortBy;
   order?: BookmarkOrder;
+  query?: string;
 }
 
 export const bookmarkService = {
   async list(userId: string, options: ListOptions) {
-    const { page, limit, sortBy, order } = options;
+    const { page, limit, sortBy, order, query } = options;
     const offset = (page - 1) * limit;
     const [bookmarks, total] = await Promise.all([
-      bookmarkRepository.findManyByUserId(userId, { limit, offset, sortBy, order }),
-      bookmarkRepository.countByUserId(userId),
+      bookmarkRepository.findManyByUserId(userId, { limit, offset, sortBy, order, query }),
+      bookmarkRepository.countByUserId(userId, query),
     ]);
     return { bookmarks, total };
   },

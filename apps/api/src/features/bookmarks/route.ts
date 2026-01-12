@@ -40,6 +40,11 @@ const listBookmarkRoute = createRoute({
         example: 'desc',
         description: 'Sort order (asc or desc)',
       }),
+      q: z.string().max(200).optional().openapi({
+        param: { name: 'q', in: 'query' },
+        example: 'example',
+        description: 'Search query for title or URL (case-insensitive)',
+      }),
     }),
   },
   responses: {
@@ -56,8 +61,8 @@ const listBookmarkRoute = createRoute({
 
 app.openapi(listBookmarkRoute, async (c) => {
   const user = c.get('user');
-  const { page, limit, sortBy, order } = c.req.valid('query');
-  const { bookmarks, total } = await bookmarkService.list(user.id, { page, limit, sortBy, order });
+  const { page, limit, sortBy, order, q } = c.req.valid('query');
+  const { bookmarks, total } = await bookmarkService.list(user.id, { page, limit, sortBy, order, query: q });
 
   return c.json({
     bookmarks,

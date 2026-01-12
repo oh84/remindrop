@@ -6,9 +6,11 @@ import { useEffect } from 'react';
 import { z } from 'zod';
 import { Button } from '@repo/ui';
 import { Plus } from 'lucide-react';
-import { BookmarkList, CreateBookmarkDialog, BookmarkSort } from '@/features/bookmarks';
+import { BookmarkList, CreateBookmarkDialog, BookmarkSort, BookmarkSearch } from '@/features/bookmarks';
 import type { SortOption } from '@/features/bookmarks';
 import type { GetApiBookmarksSortBy, GetApiBookmarksOrder } from '@/api/generated.schemas';
+
+const querySchema = z.string().max(200);
 
 const pageSchema = z.coerce
   .number()
@@ -34,10 +36,12 @@ export default function BookmarksPage() {
   const limitResult = limitSchema.safeParse(searchParams.get('limit'));
   const sortByResult = sortBySchema.safeParse(searchParams.get('sortBy'));
   const orderResult = orderSchema.safeParse(searchParams.get('order'));
+  const queryResult = querySchema.safeParse(searchParams.get('q') ?? '');
   const page = pageResult.success ? pageResult.data : 1;
   const limit = limitResult.success ? limitResult.data : 20;
   const sortBy: GetApiBookmarksSortBy = sortByResult.success ? sortByResult.data : 'createdAt';
   const order: GetApiBookmarksOrder = orderResult.success ? orderResult.data : 'desc';
+  const query = queryResult.success ? queryResult.data : '';
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -50,6 +54,17 @@ export default function BookmarksPage() {
     params.set('sortBy', option.sortBy);
     params.set('order', option.order);
     params.set('page', '1'); // ソート変更時は1ページ目に戻る
+    router.push(`/bookmarks?${params.toString()}`);
+  };
+
+  const handleSearchChange = (newQuery: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newQuery) {
+      params.set('q', newQuery);
+    } else {
+      params.delete('q');
+    }
+    params.set('page', '1'); // 検索変更時は1ページ目に戻る
     router.push(`/bookmarks?${params.toString()}`);
   };
 
@@ -102,11 +117,15 @@ export default function BookmarksPage() {
           </Button>
         </div>
       </div>
+      <div className="mb-6">
+        <BookmarkSearch value={query} onChange={handleSearchChange} />
+      </div>
       <BookmarkList
         page={page}
         limit={limit}
         sortBy={sortBy}
         order={order}
+        query={query}
         onPageChange={handlePageChange}
       />
       <CreateBookmarkDialog
