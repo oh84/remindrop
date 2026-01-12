@@ -37,6 +37,16 @@ export type GetApiBookmarksParams = {
    * @maxLength 200
    */
   q?: string;
+  /**
+   * Filter bookmarks created on or after this date (YYYY-MM-DD)
+   * @nullable
+   */
+  fromDate?: string | null;
+  /**
+   * Filter bookmarks created on or before this date (YYYY-MM-DD)
+   * @nullable
+   */
+  toDate?: string | null;
 };
 
 export type GetApiBookmarksSortBy =

@@ -45,6 +45,16 @@ const listBookmarkRoute = createRoute({
         example: 'example',
         description: 'Search query for title or URL (case-insensitive)',
       }),
+      fromDate: z.coerce.date().optional().openapi({
+        param: { name: 'fromDate', in: 'query' },
+        example: '2024-01-01',
+        description: 'Filter bookmarks created on or after this date (YYYY-MM-DD)',
+      }),
+      toDate: z.coerce.date().optional().openapi({
+        param: { name: 'toDate', in: 'query' },
+        example: '2024-12-31',
+        description: 'Filter bookmarks created on or before this date (YYYY-MM-DD)',
+      }),
     }),
   },
   responses: {
@@ -61,8 +71,8 @@ const listBookmarkRoute = createRoute({
 
 app.openapi(listBookmarkRoute, async (c) => {
   const user = c.get('user');
-  const { page, limit, sortBy, order, q } = c.req.valid('query');
-  const { bookmarks, total } = await bookmarkService.list(user.id, { page, limit, sortBy, order, query: q });
+  const { page, limit, sortBy, order, q, fromDate, toDate } = c.req.valid('query');
+  const { bookmarks, total } = await bookmarkService.list(user.id, { page, limit, sortBy, order, query: q, fromDate, toDate });
 
   return c.json({
     bookmarks,

@@ -51,8 +51,8 @@ describe('BookmarkService', () => {
         bookmarks: mockBookmarks,
         total: 2,
       });
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: undefined });
-      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId, undefined);
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: undefined, fromDate: undefined, toDate: undefined });
+      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId, { query: undefined, fromDate: undefined, toDate: undefined });
     });
 
     it('should calculate correct offset for pagination', async () => {
@@ -61,7 +61,7 @@ describe('BookmarkService', () => {
 
       await bookmarkService.list(mockUserId, { page: 3, limit: 10 });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 10, offset: 20, sortBy: undefined, order: undefined, query: undefined });
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 10, offset: 20, sortBy: undefined, order: undefined, query: undefined, fromDate: undefined, toDate: undefined });
     });
 
     it('should handle page 1 correctly (offset 0)', async () => {
@@ -70,7 +70,7 @@ describe('BookmarkService', () => {
 
       await bookmarkService.list(mockUserId, { page: 1, limit: 20 });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: undefined });
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: undefined, fromDate: undefined, toDate: undefined });
     });
 
     it('should return empty list when user has no bookmarks', async () => {
@@ -91,7 +91,7 @@ describe('BookmarkService', () => {
 
       await bookmarkService.list(mockUserId, { page: 1, limit: 20, sortBy: 'updatedAt', order: 'asc' });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: 'updatedAt', order: 'asc', query: undefined });
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: 'updatedAt', order: 'asc', query: undefined, fromDate: undefined, toDate: undefined });
     });
 
     it('should pass search query to repository', async () => {
@@ -100,8 +100,20 @@ describe('BookmarkService', () => {
 
       await bookmarkService.list(mockUserId, { page: 1, limit: 20, query: 'example' });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: 'example' });
-      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId, 'example');
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: 'example', fromDate: undefined, toDate: undefined });
+      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId, { query: 'example', fromDate: undefined, toDate: undefined });
+    });
+
+    it('should pass date filters to repository', async () => {
+      vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue([]);
+      vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(0);
+
+      const fromDate = new Date('2024-01-01');
+      const toDate = new Date('2024-12-31');
+      await bookmarkService.list(mockUserId, { page: 1, limit: 20, fromDate, toDate });
+
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined, query: undefined, fromDate, toDate });
+      expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId, { query: undefined, fromDate, toDate });
     });
 
     it('should make parallel calls to repository for performance', async () => {

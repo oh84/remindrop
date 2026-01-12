@@ -6,11 +6,12 @@ import { useEffect } from 'react';
 import { z } from 'zod';
 import { Button } from '@repo/ui';
 import { Plus } from 'lucide-react';
-import { BookmarkList, CreateBookmarkDialog, BookmarkSort, BookmarkSearch } from '@/features/bookmarks';
-import type { SortOption } from '@/features/bookmarks';
+import { BookmarkList, CreateBookmarkDialog, BookmarkSort, BookmarkSearch, BookmarkDateFilter } from '@/features/bookmarks';
+import type { SortOption, DateFilterValue } from '@/features/bookmarks';
 import type { GetApiBookmarksSortBy, GetApiBookmarksOrder } from '@/api/generated.schemas';
 
 const querySchema = z.string().max(200);
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional();
 
 const pageSchema = z.coerce
   .number()
@@ -37,11 +38,15 @@ export default function BookmarksPage() {
   const sortByResult = sortBySchema.safeParse(searchParams.get('sortBy'));
   const orderResult = orderSchema.safeParse(searchParams.get('order'));
   const queryResult = querySchema.safeParse(searchParams.get('q') ?? '');
+  const fromDateResult = dateSchema.safeParse(searchParams.get('fromDate') ?? undefined);
+  const toDateResult = dateSchema.safeParse(searchParams.get('toDate') ?? undefined);
   const page = pageResult.success ? pageResult.data : 1;
   const limit = limitResult.success ? limitResult.data : 20;
   const sortBy: GetApiBookmarksSortBy = sortByResult.success ? sortByResult.data : 'createdAt';
   const order: GetApiBookmarksOrder = orderResult.success ? orderResult.data : 'desc';
   const query = queryResult.success ? queryResult.data : '';
+  const fromDate = fromDateResult.success ? fromDateResult.data : undefined;
+  const toDate = toDateResult.success ? toDateResult.data : undefined;
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -65,6 +70,22 @@ export default function BookmarksPage() {
       params.delete('q');
     }
     params.set('page', '1'); // 検索変更時は1ページ目に戻る
+    router.push(`/bookmarks?${params.toString()}`);
+  };
+
+  const handleDateFilterChange = (dateFilter: DateFilterValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (dateFilter.fromDate) {
+      params.set('fromDate', dateFilter.fromDate);
+    } else {
+      params.delete('fromDate');
+    }
+    if (dateFilter.toDate) {
+      params.set('toDate', dateFilter.toDate);
+    } else {
+      params.delete('toDate');
+    }
+    params.set('page', '1'); // 日付フィルター変更時は1ページ目に戻る
     router.push(`/bookmarks?${params.toString()}`);
   };
 
@@ -110,6 +131,7 @@ export default function BookmarksPage() {
           ブックマーク
         </h1>
         <div className="flex items-center gap-2">
+          <BookmarkDateFilter value={{ fromDate, toDate }} onChange={handleDateFilterChange} />
           <BookmarkSort sortBy={sortBy} order={order} onChange={handleSortChange} />
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -126,6 +148,8 @@ export default function BookmarksPage() {
         sortBy={sortBy}
         order={order}
         query={query}
+        fromDate={fromDate}
+        toDate={toDate}
         onPageChange={handlePageChange}
       />
       <CreateBookmarkDialog
