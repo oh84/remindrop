@@ -1,14 +1,27 @@
-import { eq, desc, count } from 'drizzle-orm';
+import { eq, desc, asc, count } from 'drizzle-orm';
 import { db } from '../../db';
 import { bookmarks, type Bookmark, type NewBookmark } from '../../db/schema';
+import type { BookmarkSortBy, BookmarkOrder } from '@repo/types';
+
+export interface FindManyOptions {
+  limit: number;
+  offset: number;
+  sortBy?: BookmarkSortBy;
+  order?: BookmarkOrder;
+}
 
 export const bookmarkRepository = {
-  async findManyByUserId(userId: string, limit: number, offset: number) {
+  async findManyByUserId(userId: string, options: FindManyOptions) {
+    const { limit, offset, sortBy = 'createdAt', order = 'desc' } = options;
+
+    const sortColumn = sortBy === 'updatedAt' ? bookmarks.updatedAt : bookmarks.createdAt;
+    const orderFn = order === 'asc' ? asc : desc;
+
     return await db
       .select()
       .from(bookmarks)
       .where(eq(bookmarks.userId, userId))
-      .orderBy(desc(bookmarks.createdAt))
+      .orderBy(orderFn(sortColumn))
       .limit(limit)
       .offset(offset);
   },

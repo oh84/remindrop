@@ -4,19 +4,24 @@ import { Button } from '@repo/ui';
 import { useBookmarks } from '../hooks/use-bookmarks';
 import { BookmarkCard } from './bookmark-card';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import type { GetApiBookmarksSortBy, GetApiBookmarksOrder } from '@/api/generated.schemas';
 
 interface BookmarkListProps {
   page?: number;
   limit?: number;
+  sortBy?: GetApiBookmarksSortBy;
+  order?: GetApiBookmarksOrder;
   onPageChange?: (page: number) => void;
 }
 
 export function BookmarkList({
   page = 1,
   limit = 20,
+  sortBy = 'createdAt',
+  order = 'desc',
   onPageChange,
 }: BookmarkListProps) {
-  const { data, isLoading, isError, error } = useBookmarks({ page, limit });
+  const { data, isLoading, isError, error } = useBookmarks({ page, limit, sortBy, order });
 
   if (isLoading) {
     return (

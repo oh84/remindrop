@@ -45,13 +45,13 @@ describe('BookmarkService', () => {
       vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue(mockBookmarks);
       vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(2);
 
-      const result = await bookmarkService.list(mockUserId, 1, 20);
+      const result = await bookmarkService.list(mockUserId, { page: 1, limit: 20 });
 
       expect(result).toEqual({
         bookmarks: mockBookmarks,
         total: 2,
       });
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, 20, 0);
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined });
       expect(bookmarkRepository.countByUserId).toHaveBeenCalledWith(mockUserId);
     });
 
@@ -59,25 +59,25 @@ describe('BookmarkService', () => {
       vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue([]);
       vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(0);
 
-      await bookmarkService.list(mockUserId, 3, 10);
+      await bookmarkService.list(mockUserId, { page: 3, limit: 10 });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, 10, 20);
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 10, offset: 20, sortBy: undefined, order: undefined });
     });
 
     it('should handle page 1 correctly (offset 0)', async () => {
       vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue([]);
       vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(0);
 
-      await bookmarkService.list(mockUserId, 1, 20);
+      await bookmarkService.list(mockUserId, { page: 1, limit: 20 });
 
-      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, 20, 0);
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: undefined, order: undefined });
     });
 
     it('should return empty list when user has no bookmarks', async () => {
       vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue([]);
       vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(0);
 
-      const result = await bookmarkService.list(mockUserId, 1, 20);
+      const result = await bookmarkService.list(mockUserId, { page: 1, limit: 20 });
 
       expect(result).toEqual({
         bookmarks: [],
@@ -85,11 +85,20 @@ describe('BookmarkService', () => {
       });
     });
 
+    it('should pass sort options to repository', async () => {
+      vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue([]);
+      vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(0);
+
+      await bookmarkService.list(mockUserId, { page: 1, limit: 20, sortBy: 'updatedAt', order: 'asc' });
+
+      expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledWith(mockUserId, { limit: 20, offset: 0, sortBy: 'updatedAt', order: 'asc' });
+    });
+
     it('should make parallel calls to repository for performance', async () => {
       vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue([]);
       vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(0);
 
-      await bookmarkService.list(mockUserId, 1, 20);
+      await bookmarkService.list(mockUserId, { page: 1, limit: 20 });
 
       // Both calls should be made in parallel
       expect(bookmarkRepository.findManyByUserId).toHaveBeenCalledTimes(1);
