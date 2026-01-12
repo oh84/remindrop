@@ -1,4 +1,4 @@
-import { eq, desc, asc, count, ilike, or, and, gte, lte, type SQL } from 'drizzle-orm';
+import { eq, desc, asc, count, ilike, or, and, gte, lt, type SQL } from 'drizzle-orm';
 import { db } from '../../db';
 import { bookmarks, type Bookmark, type NewBookmark } from '../../db/schema';
 import type { BookmarkSortBy, BookmarkOrder } from '@repo/types';
@@ -38,10 +38,10 @@ function buildFilterConditions(userId: string, options: CountOptions): SQL[] {
   }
 
   if (toDate) {
-    // toDateの終わりまで含めるため、翌日の0時に設定
-    const endOfDay = new Date(toDate);
-    endOfDay.setDate(endOfDay.getDate() + 1);
-    conditions.push(lte(bookmarks.createdAt, endOfDay));
+    // toDateの終わりまで含めるため、翌日の0時未満（<）で比較
+    const nextDay = new Date(toDate.getTime());
+    nextDay.setDate(nextDay.getDate() + 1);
+    conditions.push(lt(bookmarks.createdAt, nextDay));
   }
 
   return conditions;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { createParser, parseAsStringLiteral, useQueryStates } from 'nuqs';
 import { Button } from '@repo/ui';
 import { Plus } from 'lucide-react';
@@ -72,9 +72,9 @@ export default function BookmarksPage() {
     setParams({ sortBy: option.sortBy, order: option.order, page: 1 });
   };
 
-  const handleSearchChange = (newQuery: string) => {
+  const handleSearchChange = useCallback((newQuery: string) => {
     setParams({ q: newQuery || null, page: 1 });
-  };
+  }, [setParams]);
 
   const handleDateFilterChange = (dateFilter: DateFilterValue) => {
     setParams({
