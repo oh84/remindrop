@@ -1,128 +1,88 @@
 'use client';
 
 import { useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { z } from 'zod';
+import { createParser, parseAsStringLiteral, useQueryStates } from 'nuqs';
 import { Button } from '@repo/ui';
 import { Plus } from 'lucide-react';
 import { BookmarkList, CreateBookmarkDialog, BookmarkSort, BookmarkSearch, BookmarkDateFilter } from '@/features/bookmarks';
 import type { SortOption, DateFilterValue } from '@/features/bookmarks';
-import type { GetApiBookmarksSortBy, GetApiBookmarksOrder } from '@/api/generated.schemas';
 
-const querySchema = z.string().max(200);
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional();
+// ページ番号パーサー (min: 1)
+const parseAsPage = createParser({
+  parse: (value) => {
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 1) return null;
+    return num;
+  },
+  serialize: (value) => String(value),
+}).withDefault(1);
 
-const pageSchema = z.coerce
-  .number()
-  .refine((val) => !isNaN(val))
-  .int()
-  .min(1);
-const limitSchema = z.coerce
-  .number()
-  .refine((val) => !isNaN(val))
-  .int()
-  .min(1)
-  .max(100);
-const sortBySchema = z.enum(['createdAt', 'updatedAt']);
-const orderSchema = z.enum(['asc', 'desc']);
+// リミットパーサー (min: 1, max: 100)
+const parseAsLimit = createParser({
+  parse: (value) => {
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 1 || num > 100) return null;
+    return num;
+  },
+  serialize: (value) => String(value),
+}).withDefault(20);
+
+// 検索クエリパーサー (max: 200)
+const parseAsQuery = createParser({
+  parse: (value) => {
+    if (!value || value.length > 200) return null;
+    return value;
+  },
+  serialize: (value) => value,
+}).withDefault('');
+
+// YYYY-MM-DD形式の日付文字列パーサー
+const parseAsDateString = createParser({
+  parse: (value) => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    return value;
+  },
+  serialize: (value) => value,
+});
+
+// URLパラメータのパーサー定義
+const bookmarkSearchParams = {
+  page: parseAsPage,
+  limit: parseAsLimit,
+  sortBy: parseAsStringLiteral(['createdAt', 'updatedAt'] as const).withDefault('createdAt'),
+  order: parseAsStringLiteral(['asc', 'desc'] as const).withDefault('desc'),
+  q: parseAsQuery,
+  fromDate: parseAsDateString,
+  toDate: parseAsDateString,
+};
 
 export default function BookmarksPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [params, setParams] = useQueryStates(bookmarkSearchParams, {
+    shallow: false, // サーバーにリクエストを送る
+  });
 
-  // URLパラメータを検証してクランプ（無効な値でAPIリクエストを送信しないように）
-  const pageResult = pageSchema.safeParse(searchParams.get('page'));
-  const limitResult = limitSchema.safeParse(searchParams.get('limit'));
-  const sortByResult = sortBySchema.safeParse(searchParams.get('sortBy'));
-  const orderResult = orderSchema.safeParse(searchParams.get('order'));
-  const queryResult = querySchema.safeParse(searchParams.get('q') ?? '');
-  const fromDateResult = dateSchema.safeParse(searchParams.get('fromDate') ?? undefined);
-  const toDateResult = dateSchema.safeParse(searchParams.get('toDate') ?? undefined);
-  const page = pageResult.success ? pageResult.data : 1;
-  const limit = limitResult.success ? limitResult.data : 20;
-  const sortBy: GetApiBookmarksSortBy = sortByResult.success ? sortByResult.data : 'createdAt';
-  const order: GetApiBookmarksOrder = orderResult.success ? orderResult.data : 'desc';
-  const query = queryResult.success ? queryResult.data : '';
-  const fromDate = fromDateResult.success ? fromDateResult.data : undefined;
-  const toDate = toDateResult.success ? toDateResult.data : undefined;
+  const { page, limit, sortBy, order, q: query, fromDate, toDate } = params;
 
   const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', newPage.toString());
-    router.push(`/bookmarks?${params.toString()}`);
+    setParams({ page: newPage });
   };
 
   const handleSortChange = (option: SortOption) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('sortBy', option.sortBy);
-    params.set('order', option.order);
-    params.set('page', '1'); // ソート変更時は1ページ目に戻る
-    router.push(`/bookmarks?${params.toString()}`);
+    setParams({ sortBy: option.sortBy, order: option.order, page: 1 });
   };
 
   const handleSearchChange = (newQuery: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (newQuery) {
-      params.set('q', newQuery);
-    } else {
-      params.delete('q');
-    }
-    params.set('page', '1'); // 検索変更時は1ページ目に戻る
-    router.push(`/bookmarks?${params.toString()}`);
+    setParams({ q: newQuery || null, page: 1 });
   };
 
   const handleDateFilterChange = (dateFilter: DateFilterValue) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (dateFilter.fromDate) {
-      params.set('fromDate', dateFilter.fromDate);
-    } else {
-      params.delete('fromDate');
-    }
-    if (dateFilter.toDate) {
-      params.set('toDate', dateFilter.toDate);
-    } else {
-      params.delete('toDate');
-    }
-    params.set('page', '1'); // 日付フィルター変更時は1ページ目に戻る
-    router.push(`/bookmarks?${params.toString()}`);
+    setParams({
+      fromDate: dateFilter.fromDate || null,
+      toDate: dateFilter.toDate || null,
+      page: 1,
+    });
   };
-
-  // URLパラメータが無効な場合は修正（クランプされた値と異なる場合）
-  useEffect(() => {
-    const urlPageParam = searchParams.get('page');
-    const urlLimitParam = searchParams.get('limit');
-    const urlSortByParam = searchParams.get('sortBy');
-    const urlOrderParam = searchParams.get('order');
-
-    const pageResult = urlPageParam ? pageSchema.safeParse(urlPageParam) : null;
-    const limitResult = urlLimitParam ? limitSchema.safeParse(urlLimitParam) : null;
-    const sortByResult = urlSortByParam ? sortBySchema.safeParse(urlSortByParam) : null;
-    const orderResult = urlOrderParam ? orderSchema.safeParse(urlOrderParam) : null;
-
-    const shouldUpdatePage =
-      urlPageParam !== null &&
-      (!pageResult?.success || pageResult.data !== page);
-    const shouldUpdateLimit =
-      urlLimitParam !== null &&
-      (!limitResult?.success || limitResult.data !== limit);
-    const shouldUpdateSortBy =
-      urlSortByParam !== null &&
-      (!sortByResult?.success || sortByResult.data !== sortBy);
-    const shouldUpdateOrder =
-      urlOrderParam !== null &&
-      (!orderResult?.success || orderResult.data !== order);
-
-    if (shouldUpdatePage || shouldUpdateLimit || shouldUpdateSortBy || shouldUpdateOrder) {
-      const params = new URLSearchParams(searchParams.toString());
-      if (shouldUpdatePage) params.set('page', page.toString());
-      if (shouldUpdateLimit) params.set('limit', limit.toString());
-      if (shouldUpdateSortBy) params.set('sortBy', sortBy);
-      if (shouldUpdateOrder) params.set('order', order);
-      router.replace(`/bookmarks?${params.toString()}`);
-    }
-  }, [page, limit, sortBy, order, searchParams, router]);
 
   return (
     <div>
@@ -131,7 +91,7 @@ export default function BookmarksPage() {
           ブックマーク
         </h1>
         <div className="flex items-center gap-2">
-          <BookmarkDateFilter value={{ fromDate, toDate }} onChange={handleDateFilterChange} />
+          <BookmarkDateFilter value={{ fromDate: fromDate ?? undefined, toDate: toDate ?? undefined }} onChange={handleDateFilterChange} />
           <BookmarkSort sortBy={sortBy} order={order} onChange={handleSortChange} />
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -148,8 +108,8 @@ export default function BookmarksPage() {
         sortBy={sortBy}
         order={order}
         query={query}
-        fromDate={fromDate}
-        toDate={toDate}
+        fromDate={fromDate ?? undefined}
+        toDate={toDate ?? undefined}
         onPageChange={handlePageChange}
       />
       <CreateBookmarkDialog
