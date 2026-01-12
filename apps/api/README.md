@@ -8,6 +8,9 @@ Remindrop のバックエンド API サーバー。
 - **@hono/zod-openapi**: OpenAPI 仕様の自動生成
 - **Zod**: スキーマバリデーション
 - **TypeScript**: 型安全な開発
+- **Drizzle ORM**: 型安全なデータベースアクセス
+- **BetterAuth**: 認証ライブラリ
+- **Vitest**: テストフレームワーク
 
 ## 開発
 
@@ -23,6 +26,11 @@ pnpm type-check
 
 # テスト（Docker必須）
 pnpm test
+
+# データベース操作
+pnpm db:generate   # マイグレーション生成
+pnpm db:migrate    # マイグレーション実行
+pnpm db:studio     # Drizzle Studio起動
 ```
 
 ## エンドポイント
@@ -36,10 +44,17 @@ pnpm test
 
 ```
 src/
-├── routes/         # OpenAPI ルート定義
-├── schemas/        # Zod スキーマ
-├── services/       # ビジネスロジック
-├── middleware/     # ミドルウェア
+├── features/       # 機能別モジュール
+│   └── [feature]/
+│       ├── route.ts
+│       ├── service.ts
+│       └── repository.ts
+├── db/             # データベース
+│   ├── schema/     # Drizzleスキーマ定義
+│   └── index.ts    # DB接続
+├── handlers/       # 共通ハンドラ
+├── middleware/     # ミドルウェア（認証など）
 ├── lib/            # ライブラリ
+├── test-utils/     # テストユーティリティ
 └── index.ts        # エントリーポイント
 ```

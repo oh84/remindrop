@@ -114,9 +114,9 @@ pnpm db:reset     # PostgreSQLリセット（データ削除）
 - ✅ Next.js Webアプリ + shadcn/ui
 - ✅ Hono API + OpenAPI
 - ✅ Drizzle ORM + PostgreSQL
-- ⏳ 認証（BetterAuth）
-- ⏳ ブックマークCRUD
-- ⏳ 検索機能
+- ✅ 認証（BetterAuth）
+- ✅ ブックマークCRUD
+- ✅ 検索・フィルター・ソート機能
 
 **Phase 3 (AWSデプロイ)**
 - ⏳ AWS RDS構築
