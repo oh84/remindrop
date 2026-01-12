@@ -81,16 +81,24 @@ export function BookmarkDateFilter({ value, onChange }: BookmarkDateFilterProps)
         <Calendar className="h-4 w-4" />
         <span className="hidden sm:inline max-w-32 truncate">{getFilterLabel()}</span>
         {hasFilter && (
-          <button
-            type="button"
+          <span
+            role="button"
+            tabIndex={0}
             onClick={(e) => {
               e.stopPropagation();
               handleClear();
             }}
-            className="ml-1 hover:text-destructive"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                handleClear();
+              }
+            }}
+            className="ml-1 hover:text-destructive cursor-pointer"
           >
             <X className="h-3 w-3" />
-          </button>
+          </span>
         )}
       </Button>
 
