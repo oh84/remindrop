@@ -109,13 +109,11 @@
 - [x] React Query mutation
 - [x] トースト通知
 
-### Task 2.6: 検索・フィルター機能
-- [ ] 検索API実装
-- [ ] 全文検索（PostgreSQL）
-- [ ] タグフィルター
-- [ ] 日付フィルター
-- [ ] ソート機能
-- [ ] URLパラメータ管理
+### Task 2.6: 検索・フィルター機能 ✅
+- [x] 検索API実装（タイトル/URL ILIKE検索）
+- [x] 日付フィルター（fromDate/toDate）
+- [x] ソート機能（createdAt/updatedAt, asc/desc）
+- [x] URLパラメータ管理（nuqs導入）
 
 ---
 
@@ -276,6 +274,8 @@
 ## 今後の拡張（Phase 8+）
 
 ### 検索・整理機能
+- [ ] 全文検索（PostgreSQL）
+- [ ] タグフィルター
 - [ ] タグ管理画面
 - [ ] タグの編集・削除
 - [ ] タグの色分け
