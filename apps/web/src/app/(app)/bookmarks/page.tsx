@@ -1,64 +1,88 @@
 'use client';
 
-import { useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { z } from 'zod';
+import { useState, useCallback } from 'react';
+import { createParser, parseAsStringLiteral, useQueryStates } from 'nuqs';
 import { Button } from '@repo/ui';
 import { Plus } from 'lucide-react';
-import { BookmarkList, CreateBookmarkDialog } from '@/features/bookmarks';
+import { BookmarkList, CreateBookmarkDialog, BookmarkSort, BookmarkSearch, BookmarkDateFilter } from '@/features/bookmarks';
+import type { SortOption, DateFilterValue } from '@/features/bookmarks';
 
-const pageSchema = z.coerce
-  .number()
-  .refine((val) => !isNaN(val))
-  .int()
-  .min(1);
-const limitSchema = z.coerce
-  .number()
-  .refine((val) => !isNaN(val))
-  .int()
-  .min(1)
-  .max(100);
+// ページ番号パーサー (min: 1)
+const parseAsPage = createParser({
+  parse: (value) => {
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 1) return null;
+    return num;
+  },
+  serialize: (value) => String(value),
+}).withDefault(1);
+
+// リミットパーサー (min: 1, max: 100)
+const parseAsLimit = createParser({
+  parse: (value) => {
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 1 || num > 100) return null;
+    return num;
+  },
+  serialize: (value) => String(value),
+}).withDefault(20);
+
+// 検索クエリパーサー (max: 200)
+const parseAsQuery = createParser({
+  parse: (value) => {
+    if (!value || value.length > 200) return null;
+    return value;
+  },
+  serialize: (value) => value,
+}).withDefault('');
+
+// YYYY-MM-DD形式の日付文字列パーサー
+const parseAsDateString = createParser({
+  parse: (value) => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    return value;
+  },
+  serialize: (value) => value,
+});
+
+// URLパラメータのパーサー定義
+const bookmarkSearchParams = {
+  page: parseAsPage,
+  limit: parseAsLimit,
+  sortBy: parseAsStringLiteral(['createdAt', 'updatedAt'] as const).withDefault('createdAt'),
+  order: parseAsStringLiteral(['asc', 'desc'] as const).withDefault('desc'),
+  q: parseAsQuery,
+  fromDate: parseAsDateString,
+  toDate: parseAsDateString,
+};
 
 export default function BookmarksPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [params, setParams] = useQueryStates(bookmarkSearchParams, {
+    shallow: false, // サーバーにリクエストを送る
+  });
 
-  // URLパラメータを検証してクランプ（無効な値でAPIリクエストを送信しないように）
-  const pageResult = pageSchema.safeParse(searchParams.get('page'));
-  const limitResult = limitSchema.safeParse(searchParams.get('limit'));
-  const page = pageResult.success ? pageResult.data : 1;
-  const limit = limitResult.success ? limitResult.data : 20;
+  const { page, limit, sortBy, order, q: query, fromDate, toDate } = params;
 
   const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', newPage.toString());
-    router.push(`/bookmarks?${params.toString()}`);
+    setParams({ page: newPage });
   };
 
-  // URLパラメータが無効な場合は修正（クランプされた値と異なる場合）
-  useEffect(() => {
-    const urlPageParam = searchParams.get('page');
-    const urlLimitParam = searchParams.get('limit');
+  const handleSortChange = (option: SortOption) => {
+    setParams({ sortBy: option.sortBy, order: option.order, page: 1 });
+  };
 
-    const pageResult = urlPageParam ? pageSchema.safeParse(urlPageParam) : null;
-    const limitResult = urlLimitParam ? limitSchema.safeParse(urlLimitParam) : null;
+  const handleSearchChange = useCallback((newQuery: string) => {
+    setParams({ q: newQuery || null, page: 1 });
+  }, [setParams]);
 
-    const shouldUpdatePage =
-      urlPageParam !== null &&
-      (!pageResult?.success || pageResult.data !== page);
-    const shouldUpdateLimit =
-      urlLimitParam !== null &&
-      (!limitResult?.success || limitResult.data !== limit);
-
-    if (shouldUpdatePage || shouldUpdateLimit) {
-      const params = new URLSearchParams(searchParams.toString());
-      if (shouldUpdatePage) params.set('page', page.toString());
-      if (shouldUpdateLimit) params.set('limit', limit.toString());
-      router.replace(`/bookmarks?${params.toString()}`);
-    }
-  }, [page, limit, searchParams, router]);
+  const handleDateFilterChange = (dateFilter: DateFilterValue) => {
+    setParams({
+      fromDate: dateFilter.fromDate || null,
+      toDate: dateFilter.toDate || null,
+      page: 1,
+    });
+  };
 
   return (
     <div>
@@ -66,14 +90,26 @@ export default function BookmarksPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           ブックマーク
         </h1>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          追加
-        </Button>
+        <div className="flex items-center gap-2">
+          <BookmarkDateFilter value={{ fromDate: fromDate ?? undefined, toDate: toDate ?? undefined }} onChange={handleDateFilterChange} />
+          <BookmarkSort sortBy={sortBy} order={order} onChange={handleSortChange} />
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            追加
+          </Button>
+        </div>
+      </div>
+      <div className="mb-6">
+        <BookmarkSearch value={query} onChange={handleSearchChange} />
       </div>
       <BookmarkList
         page={page}
         limit={limit}
+        sortBy={sortBy}
+        order={order}
+        query={query}
+        fromDate={fromDate ?? undefined}
+        toDate={toDate ?? undefined}
         onPageChange={handlePageChange}
       />
       <CreateBookmarkDialog

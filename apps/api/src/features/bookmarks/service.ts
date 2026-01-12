@@ -1,13 +1,25 @@
 import { bookmarkRepository } from './repository';
 import { CreateBookmarkSchema, UpdateBookmarkSchema } from '@repo/types';
+import type { BookmarkSortBy, BookmarkOrder } from '@repo/types';
 import { z } from 'zod';
 
+export interface ListOptions {
+  page: number;
+  limit: number;
+  sortBy?: BookmarkSortBy;
+  order?: BookmarkOrder;
+  query?: string;
+  fromDate?: Date;
+  toDate?: Date;
+}
+
 export const bookmarkService = {
-  async list(userId: string, page: number, limit: number) {
+  async list(userId: string, options: ListOptions) {
+    const { page, limit, sortBy, order, query, fromDate, toDate } = options;
     const offset = (page - 1) * limit;
     const [bookmarks, total] = await Promise.all([
-      bookmarkRepository.findManyByUserId(userId, limit, offset),
-      bookmarkRepository.countByUserId(userId),
+      bookmarkRepository.findManyByUserId(userId, { limit, offset, sortBy, order, query, fromDate, toDate }),
+      bookmarkRepository.countByUserId(userId, { query, fromDate, toDate }),
     ]);
     return { bookmarks, total };
   },

@@ -32,6 +32,16 @@ export const UpdateBookmarkSchema = z.object({
   status: BookmarkStatusSchema.optional(),
 });
 
+export const BookmarkSortBySchema = z.enum(['createdAt', 'updatedAt']).openapi({
+  example: 'createdAt',
+  description: 'Field to sort by',
+});
+
+export const BookmarkOrderSchema = z.enum(['asc', 'desc']).openapi({
+  example: 'desc',
+  description: 'Sort order',
+});
+
 export const BookmarkListSchema = z.object({
   bookmarks: z.array(BookmarkSchema),
   total: z.number().openapi({ example: 10 }),
@@ -43,3 +53,5 @@ export type Bookmark = z.infer<typeof BookmarkSchema>;
 export type CreateBookmarkInput = z.infer<typeof CreateBookmarkSchema>;
 export type UpdateBookmarkInput = z.infer<typeof UpdateBookmarkSchema>;
 export type BookmarkStatus = z.infer<typeof BookmarkStatusSchema>;
+export type BookmarkSortBy = z.infer<typeof BookmarkSortBySchema>;
+export type BookmarkOrder = z.infer<typeof BookmarkOrderSchema>;

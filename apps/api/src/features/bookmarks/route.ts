@@ -3,7 +3,9 @@ import {
   BookmarkSchema,
   CreateBookmarkSchema,
   UpdateBookmarkSchema,
-  BookmarkListSchema
+  BookmarkListSchema,
+  BookmarkSortBySchema,
+  BookmarkOrderSchema,
 } from '@repo/types';
 import { AuthVariables } from '../../middleware/auth';
 import { bookmarkService } from './service';
@@ -28,6 +30,31 @@ const listBookmarkRoute = createRoute({
         example: 20,
         description: 'Number of items per page (max 100)',
       }),
+      sortBy: BookmarkSortBySchema.default('createdAt').openapi({
+        param: { name: 'sortBy', in: 'query' },
+        example: 'createdAt',
+        description: 'Field to sort by (createdAt or updatedAt)',
+      }),
+      order: BookmarkOrderSchema.default('desc').openapi({
+        param: { name: 'order', in: 'query' },
+        example: 'desc',
+        description: 'Sort order (asc or desc)',
+      }),
+      q: z.string().max(200).optional().openapi({
+        param: { name: 'q', in: 'query' },
+        example: 'example',
+        description: 'Search query for title or URL (case-insensitive)',
+      }),
+      fromDate: z.coerce.date().optional().openapi({
+        param: { name: 'fromDate', in: 'query' },
+        example: '2024-01-01',
+        description: 'Filter bookmarks created on or after this date (YYYY-MM-DD)',
+      }),
+      toDate: z.coerce.date().optional().openapi({
+        param: { name: 'toDate', in: 'query' },
+        example: '2024-12-31',
+        description: 'Filter bookmarks created on or before this date (YYYY-MM-DD)',
+      }),
     }),
   },
   responses: {
@@ -44,8 +71,8 @@ const listBookmarkRoute = createRoute({
 
 app.openapi(listBookmarkRoute, async (c) => {
   const user = c.get('user');
-  const { page, limit } = c.req.valid('query');
-  const { bookmarks, total } = await bookmarkService.list(user.id, page, limit);
+  const { page, limit, sortBy, order, q, fromDate, toDate } = c.req.valid('query');
+  const { bookmarks, total } = await bookmarkService.list(user.id, { page, limit, sortBy, order, query: q, fromDate, toDate });
 
   return c.json({
     bookmarks,

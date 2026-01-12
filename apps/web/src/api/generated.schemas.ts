@@ -24,7 +24,47 @@ export type GetApiBookmarksParams = {
    * @maximum 100
    */
   limit?: number;
+  /**
+   * Field to sort by (createdAt or updatedAt)
+   */
+  sortBy?: GetApiBookmarksSortBy;
+  /**
+   * Sort order (asc or desc)
+   */
+  order?: GetApiBookmarksOrder;
+  /**
+   * Search query for title or URL (case-insensitive)
+   * @maxLength 200
+   */
+  q?: string;
+  /**
+   * Filter bookmarks created on or after this date (YYYY-MM-DD)
+   * @nullable
+   */
+  fromDate?: string | null;
+  /**
+   * Filter bookmarks created on or before this date (YYYY-MM-DD)
+   * @nullable
+   */
+  toDate?: string | null;
 };
+
+export type GetApiBookmarksSortBy =
+  (typeof GetApiBookmarksSortBy)[keyof typeof GetApiBookmarksSortBy];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GetApiBookmarksSortBy = {
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type GetApiBookmarksOrder = (typeof GetApiBookmarksOrder)[keyof typeof GetApiBookmarksOrder];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const GetApiBookmarksOrder = {
+  asc: 'asc',
+  desc: 'desc',
+} as const;
 
 export type GetApiBookmarks200BookmarksItemStatus =
   (typeof GetApiBookmarks200BookmarksItemStatus)[keyof typeof GetApiBookmarks200BookmarksItemStatus];

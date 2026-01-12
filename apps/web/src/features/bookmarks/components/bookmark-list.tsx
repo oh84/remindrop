@@ -4,19 +4,30 @@ import { Button } from '@repo/ui';
 import { useBookmarks } from '../hooks/use-bookmarks';
 import { BookmarkCard } from './bookmark-card';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import type { GetApiBookmarksSortBy, GetApiBookmarksOrder } from '@/api/generated.schemas';
 
 interface BookmarkListProps {
   page?: number;
   limit?: number;
+  sortBy?: GetApiBookmarksSortBy;
+  order?: GetApiBookmarksOrder;
+  query?: string;
+  fromDate?: string;
+  toDate?: string;
   onPageChange?: (page: number) => void;
 }
 
 export function BookmarkList({
   page = 1,
   limit = 20,
+  sortBy = 'createdAt',
+  order = 'desc',
+  query,
+  fromDate,
+  toDate,
   onPageChange,
 }: BookmarkListProps) {
-  const { data, isLoading, isError, error } = useBookmarks({ page, limit });
+  const { data, isLoading, isError, error } = useBookmarks({ page, limit, sortBy, order, q: query, fromDate, toDate });
 
   if (isLoading) {
     return (
@@ -40,12 +51,16 @@ export function BookmarkList({
     );
   }
 
+  const hasFilters = query || fromDate || toDate;
+
   if (!data || data.total === 0) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
-        <p className="text-muted-foreground">ブックマークがありません</p>
+        <p className="text-muted-foreground">
+          {hasFilters ? '検索結果がありません' : 'ブックマークがありません'}
+        </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          新しいブックマークを追加してください
+          {hasFilters ? '条件を変更してください' : '新しいブックマークを追加してください'}
         </p>
       </div>
     );
