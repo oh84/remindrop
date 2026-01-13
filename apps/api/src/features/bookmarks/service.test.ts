@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { bookmarkService } from './service';
-import { bookmarkRepository } from './repository';
+import { bookmarkRepository, type BookmarkWithTags } from './repository';
+import { aiService } from '../ai';
 import type { Bookmark } from '../../db/schema';
 
 // Mock repository
@@ -12,6 +13,17 @@ vi.mock('./repository', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    findOrCreateTag: vi.fn(),
+    addTagsToBookmark: vi.fn(),
+  },
+}));
+
+// Mock AI service
+vi.mock('../ai', () => ({
+  aiService: {
+    fetchWebContent: vi.fn(),
+    generateSummary: vi.fn(),
+    generateTags: vi.fn(),
   },
 }));
 
@@ -35,13 +47,27 @@ describe('BookmarkService', () => {
     ...overrides,
   });
 
+  const createMockBookmarkWithTags = (overrides?: Partial<BookmarkWithTags>): BookmarkWithTags => ({
+    ...createMockBookmark(overrides),
+    tags: [],
+    ...overrides,
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default mock implementations
+    vi.mocked(bookmarkRepository.findOrCreateTag).mockImplementation(async (userId, tagName) => ({
+      id: `tag-${tagName}`,
+      name: tagName,
+      userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
   });
 
   describe('list', () => {
     it('should return bookmarks and total count for a user', async () => {
-      const mockBookmarks = [createMockBookmark(), createMockBookmark({ id: 'bookmark-2' })];
+      const mockBookmarks = [createMockBookmarkWithTags(), createMockBookmarkWithTags({ id: 'bookmark-2' })];
       vi.mocked(bookmarkRepository.findManyByUserId).mockResolvedValue(mockBookmarks);
       vi.mocked(bookmarkRepository.countByUserId).mockResolvedValue(2);
 
@@ -330,6 +356,163 @@ describe('BookmarkService', () => {
 
       expect(result).toBeNull();
       expect(bookmarkRepository.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('summarize', () => {
+    it('should generate summary and update bookmark', async () => {
+      const mockBookmark = createMockBookmark();
+      const mockContent = 'This is the webpage content...';
+      const mockSummary = 'This is a summary of the webpage content.';
+      const updatedBookmark = createMockBookmark({ summary: mockSummary, content: mockContent, status: 'completed' });
+
+      vi.mocked(bookmarkRepository.findById).mockResolvedValue(mockBookmark);
+      vi.mocked(aiService.fetchWebContent).mockResolvedValue(mockContent);
+      vi.mocked(aiService.generateSummary).mockResolvedValue(mockSummary);
+      vi.mocked(bookmarkRepository.update).mockResolvedValue(updatedBookmark);
+
+      const result = await bookmarkService.summarize(mockBookmarkId, mockUserId);
+
+      expect(result).toEqual(updatedBookmark);
+      expect(aiService.fetchWebContent).toHaveBeenCalledWith(mockBookmark.url);
+      expect(aiService.generateSummary).toHaveBeenCalledWith(mockContent);
+      expect(bookmarkRepository.update).toHaveBeenCalledWith(mockBookmarkId, {
+        summary: mockSummary,
+        content: mockContent,
+        status: 'completed',
+      });
+    });
+
+    it('should return null when bookmark does not exist', async () => {
+      vi.mocked(bookmarkRepository.findById).mockResolvedValue(undefined);
+
+      const result = await bookmarkService.summarize(mockBookmarkId, mockUserId);
+
+      expect(result).toBeNull();
+      expect(aiService.fetchWebContent).not.toHaveBeenCalled();
+      expect(aiService.generateSummary).not.toHaveBeenCalled();
+    });
+
+    it('should return null when bookmark belongs to another user', async () => {
+      const mockBookmark = createMockBookmark({ userId: mockOtherUserId });
+      vi.mocked(bookmarkRepository.findById).mockResolvedValue(mockBookmark);
+
+      const result = await bookmarkService.summarize(mockBookmarkId, mockUserId);
+
+      expect(result).toBeNull();
+      expect(aiService.fetchWebContent).not.toHaveBeenCalled();
+      expect(aiService.generateSummary).not.toHaveBeenCalled();
+    });
+
+    it('should handle fetch errors gracefully', async () => {
+      const mockBookmark = createMockBookmark();
+      vi.mocked(bookmarkRepository.findById).mockResolvedValue(mockBookmark);
+      vi.mocked(aiService.fetchWebContent).mockRejectedValue(new Error('Failed to fetch'));
+
+      await expect(bookmarkService.summarize(mockBookmarkId, mockUserId)).rejects.toThrow('Failed to fetch');
+      expect(aiService.generateSummary).not.toHaveBeenCalled();
+      expect(bookmarkRepository.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('generateTags', () => {
+    it('should generate tags and link them to bookmark', async () => {
+      const mockBookmark = createMockBookmark({ content: 'Existing content' });
+      const mockTagNames = ['JavaScript', 'React', 'Frontend'];
+      const updatedBookmark = createMockBookmark({ content: 'Existing content' });
+
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(mockBookmark);
+      vi.mocked(aiService.generateTags).mockResolvedValue(mockTagNames);
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(updatedBookmark);
+
+      const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
+
+      expect(result).toEqual({
+        bookmark: updatedBookmark,
+        tags: mockTagNames,
+      });
+      expect(aiService.generateTags).toHaveBeenCalledWith('Existing content');
+      expect(bookmarkRepository.findOrCreateTag).toHaveBeenCalledTimes(3);
+      expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(
+        mockBookmarkId,
+        expect.arrayContaining([expect.any(String)])
+      );
+    });
+
+    it('should fetch content if not already stored', async () => {
+      const mockBookmark = createMockBookmark({ content: null });
+      const mockContent = 'Webpage content';
+      const mockTagNames = ['Tech', 'News'];
+      const updatedBookmark = createMockBookmark({ content: mockContent });
+
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(mockBookmark);
+      vi.mocked(aiService.fetchWebContent).mockResolvedValue(mockContent);
+      vi.mocked(aiService.generateTags).mockResolvedValue(mockTagNames);
+      vi.mocked(bookmarkRepository.update).mockResolvedValue(mockBookmark);
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(updatedBookmark);
+
+      const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
+
+      expect(result).toBeDefined();
+      expect(aiService.fetchWebContent).toHaveBeenCalledWith(mockBookmark.url);
+      expect(bookmarkRepository.update).toHaveBeenCalledWith(mockBookmarkId, { content: mockContent });
+      expect(aiService.generateTags).toHaveBeenCalledWith(mockContent);
+    });
+
+    it('should return null when bookmark does not exist', async () => {
+      vi.mocked(bookmarkRepository.findById).mockResolvedValue(undefined);
+
+      const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
+
+      expect(result).toBeNull();
+      expect(aiService.generateTags).not.toHaveBeenCalled();
+    });
+
+    it('should return null when bookmark belongs to another user', async () => {
+      const mockBookmark = createMockBookmark({ userId: mockOtherUserId });
+      vi.mocked(bookmarkRepository.findById).mockResolvedValue(mockBookmark);
+
+      const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
+
+      expect(result).toBeNull();
+      expect(aiService.generateTags).not.toHaveBeenCalled();
+    });
+
+    it('should handle empty tag list', async () => {
+      const mockBookmark = createMockBookmark({ content: 'Some content' });
+      const updatedBookmark = createMockBookmark({ content: 'Some content' });
+
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(mockBookmark);
+      vi.mocked(aiService.generateTags).mockResolvedValue([]);
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(updatedBookmark);
+
+      const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
+
+      expect(result).toEqual({
+        bookmark: updatedBookmark,
+        tags: [],
+      });
+      expect(bookmarkRepository.findOrCreateTag).not.toHaveBeenCalled();
+      expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(mockBookmarkId, []);
+    });
+
+    it('should filter out null tags', async () => {
+      const mockBookmark = createMockBookmark({ content: 'Some content' });
+      const mockTagNames = ['Tag1', 'Tag2'];
+      const updatedBookmark = createMockBookmark({ content: 'Some content' });
+
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(mockBookmark);
+      vi.mocked(aiService.generateTags).mockResolvedValue(mockTagNames);
+      vi.mocked(bookmarkRepository.findOrCreateTag)
+        .mockResolvedValueOnce({ id: 'tag1', name: 'Tag1', userId: mockUserId, createdAt: new Date(), updatedAt: new Date() })
+        .mockResolvedValueOnce(null as any); // Simulate null result
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(updatedBookmark);
+
+      const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
+
+      expect(result).toBeDefined();
+      expect(result?.tags).toHaveLength(1); // Only Tag1 should be included
+      expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(mockBookmarkId, ['tag1']);
     });
   });
 });

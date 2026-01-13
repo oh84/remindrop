@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -10,10 +11,12 @@ import {
   CardTitle,
 } from '@repo/ui';
 import type { GetApiBookmarks200BookmarksItem } from '@/api/generated.schemas';
-import { ExternalLink, Pencil, Trash2 } from 'lucide-react';
+import { ExternalLink, Pencil, Trash2, Sparkles, Tag, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import { EditBookmarkDialog } from './edit-bookmark-dialog';
 import { DeleteBookmarkDialog } from './delete-bookmark-dialog';
+import { useSummarizeBookmark } from '../hooks/use-summarize-bookmark';
+import { useGenerateTags } from '../hooks/use-generate-tags';
 
 interface BookmarkCardProps {
   bookmark: GetApiBookmarks200BookmarksItem;
@@ -22,6 +25,21 @@ interface BookmarkCardProps {
 export function BookmarkCard({ bookmark }: BookmarkCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+
+  const summarizeMutation = useSummarizeBookmark();
+  const generateTagsMutation = useGenerateTags();
+
+  const isSummarizing = summarizeMutation.isPending;
+  const isGeneratingTags = generateTagsMutation.isPending;
+
+  const handleSummarize = () => {
+    summarizeMutation.mutate({ id: bookmark.id });
+  };
+
+  const handleGenerateTags = () => {
+    generateTagsMutation.mutate({ id: bookmark.id });
+  };
 
   const formatDate = (date: string | Date) => {
     const d = typeof date === 'string' ? new Date(date) : date;
@@ -69,6 +87,36 @@ export function BookmarkCard({ bookmark }: BookmarkCardProps) {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
+                  onClick={handleSummarize}
+                  disabled={isSummarizing}
+                  aria-label="要約生成"
+                  title="AIで要約を生成"
+                >
+                  {isSummarizing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleGenerateTags}
+                  disabled={isGeneratingTags}
+                  aria-label="タグ生成"
+                  title="AIでタグを生成"
+                >
+                  {isGeneratingTags ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Tag className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
                   onClick={() => setIsEditOpen(true)}
                   aria-label="編集"
                 >
@@ -95,9 +143,39 @@ export function BookmarkCard({ bookmark }: BookmarkCardProps) {
             </time>
           </div>
           {bookmark.summary && (
-            <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
-              {bookmark.summary}
-            </p>
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                className="w-full text-left group/summary"
+              >
+                <p className={`text-sm text-muted-foreground ${isSummaryExpanded ? '' : 'line-clamp-2'}`}>
+                  {bookmark.summary}
+                </p>
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70 hover:text-muted-foreground mt-1">
+                  {isSummaryExpanded ? (
+                    <>
+                      <ChevronUp className="h-3 w-3" />
+                      折りたたむ
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3 w-3" />
+                      続きを読む
+                    </>
+                  )}
+                </span>
+              </button>
+            </div>
+          )}
+          {bookmark.tags && bookmark.tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1">
+              {bookmark.tags.map((tag) => (
+                <Badge key={tag.id} variant="secondary" className="text-xs">
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

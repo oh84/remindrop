@@ -2,6 +2,7 @@ import { bookmarkRepository } from './repository';
 import { CreateBookmarkSchema, UpdateBookmarkSchema } from '@repo/types';
 import type { BookmarkSortBy, BookmarkOrder } from '@repo/types';
 import { z } from 'zod';
+import { aiService } from '../ai';
 
 export interface ListOptions {
   page: number;
@@ -54,5 +55,67 @@ export const bookmarkService = {
       return null;
     }
     return await bookmarkRepository.delete(id);
+  },
+
+  async summarize(id: string, userId: string) {
+    const bookmark = await bookmarkRepository.findById(id);
+    if (!bookmark || bookmark.userId !== userId) {
+      return null;
+    }
+
+    // Fetch content from URL
+    const content = await aiService.fetchWebContent(bookmark.url);
+
+    // Generate summary using AI
+    const summary = await aiService.generateSummary(content);
+
+    // Update bookmark with summary
+    return await bookmarkRepository.update(id, {
+      summary,
+      content,
+      status: 'completed',
+    });
+  },
+
+  async generateTags(id: string, userId: string) {
+    const bookmark = await bookmarkRepository.findById(id);
+    if (!bookmark || bookmark.userId !== userId) {
+      return null;
+    }
+
+    // Use existing content or fetch from URL
+    let content = bookmark.content;
+    if (!content) {
+      content = await aiService.fetchWebContent(bookmark.url);
+      // Store content for future use
+      await bookmarkRepository.update(id, { content });
+    }
+
+    // Generate tags using AI
+    const generatedTagNames = await aiService.generateTags(content);
+
+    // Save tags to database
+    const savedTagsResults = await Promise.all(
+      generatedTagNames.map((tagName) =>
+        bookmarkRepository.findOrCreateTag(userId, tagName)
+      )
+    );
+
+    // Filter out any undefined results
+    const savedTags = savedTagsResults.filter((tag): tag is NonNullable<typeof tag> => tag != null);
+
+    // Link tags to bookmark
+    await bookmarkRepository.addTagsToBookmark(
+      id,
+      savedTags.map((tag) => tag.id)
+    );
+
+    // Get updated bookmark
+    const updatedBookmark = await bookmarkRepository.findById(id);
+
+    return {
+      bookmark: updatedBookmark,
+      tags: savedTags.map((tag) => tag.name),
+    };
   },
 };

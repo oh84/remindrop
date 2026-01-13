@@ -5,6 +5,14 @@ extendZodWithOpenApi(z);
 
 const BookmarkStatusSchema = z.enum(['processing', 'completed', 'failed']);
 
+export const TagSchema = z.object({
+  id: z.uuid().openapi({ example: '123e4567-e89b-12d3-a456-426614174001' }),
+  name: z.string().openapi({ example: 'JavaScript' }),
+  userId: z.string().openapi({ example: 'user-123' }),
+  createdAt: z.iso.datetime().or(z.date()).openapi({ example: '2024-01-01T00:00:00.000Z' }),
+  updatedAt: z.iso.datetime().or(z.date()).openapi({ example: '2024-01-01T00:00:00.000Z' }),
+});
+
 export const BookmarkSchema = z.object({
   id: z.uuid().openapi({ example: '123e4567-e89b-12d3-a456-426614174000' }),
   userId: z.string().openapi({ example: 'user-123' }),
@@ -17,6 +25,7 @@ export const BookmarkSchema = z.object({
   status: BookmarkStatusSchema.openapi({ example: 'completed' }),
   createdAt: z.iso.datetime().or(z.date()).openapi({ example: '2024-01-01T00:00:00.000Z' }),
   updatedAt: z.iso.datetime().or(z.date()).openapi({ example: '2024-01-01T00:00:00.000Z' }),
+  tags: z.array(TagSchema).optional().openapi({ example: [{ id: '123e4567-e89b-12d3-a456-426614174001', name: 'JavaScript', userId: 'user-123', createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z' }] }),
 });
 
 export const CreateBookmarkSchema = z.object({
@@ -49,6 +58,7 @@ export const BookmarkListSchema = z.object({
   limit: z.number().openapi({ example: 20 }),
 });
 
+export type Tag = z.infer<typeof TagSchema>;
 export type Bookmark = z.infer<typeof BookmarkSchema>;
 export type CreateBookmarkInput = z.infer<typeof CreateBookmarkSchema>;
 export type UpdateBookmarkInput = z.infer<typeof UpdateBookmarkSchema>;

@@ -80,6 +80,18 @@ export type GetApiBookmarks200BookmarksItemCreatedAt = string | string;
 
 export type GetApiBookmarks200BookmarksItemUpdatedAt = string | string;
 
+export type GetApiBookmarks200BookmarksItemTagsItemCreatedAt = string | string;
+
+export type GetApiBookmarks200BookmarksItemTagsItemUpdatedAt = string | string;
+
+export type GetApiBookmarks200BookmarksItemTagsItem = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: GetApiBookmarks200BookmarksItemTagsItemCreatedAt;
+  updatedAt: GetApiBookmarks200BookmarksItemTagsItemUpdatedAt;
+};
+
 export type GetApiBookmarks200BookmarksItem = {
   id: string;
   userId: string;
@@ -97,6 +109,7 @@ export type GetApiBookmarks200BookmarksItem = {
   status: GetApiBookmarks200BookmarksItemStatus;
   createdAt: GetApiBookmarks200BookmarksItemCreatedAt;
   updatedAt: GetApiBookmarks200BookmarksItemUpdatedAt;
+  tags?: GetApiBookmarks200BookmarksItemTagsItem[];
 };
 
 export type GetApiBookmarks200 = {
@@ -130,6 +143,18 @@ export type PostApiBookmarks201CreatedAt = string | string;
 
 export type PostApiBookmarks201UpdatedAt = string | string;
 
+export type PostApiBookmarks201TagsItemCreatedAt = string | string;
+
+export type PostApiBookmarks201TagsItemUpdatedAt = string | string;
+
+export type PostApiBookmarks201TagsItem = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: PostApiBookmarks201TagsItemCreatedAt;
+  updatedAt: PostApiBookmarks201TagsItemUpdatedAt;
+};
+
 export type PostApiBookmarks201 = {
   id: string;
   userId: string;
@@ -147,6 +172,7 @@ export type PostApiBookmarks201 = {
   status: PostApiBookmarks201Status;
   createdAt: PostApiBookmarks201CreatedAt;
   updatedAt: PostApiBookmarks201UpdatedAt;
+  tags?: PostApiBookmarks201TagsItem[];
 };
 
 export type GetApiBookmarksId200Status =
@@ -162,6 +188,18 @@ export const GetApiBookmarksId200Status = {
 export type GetApiBookmarksId200CreatedAt = string | string;
 
 export type GetApiBookmarksId200UpdatedAt = string | string;
+
+export type GetApiBookmarksId200TagsItemCreatedAt = string | string;
+
+export type GetApiBookmarksId200TagsItemUpdatedAt = string | string;
+
+export type GetApiBookmarksId200TagsItem = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: GetApiBookmarksId200TagsItemCreatedAt;
+  updatedAt: GetApiBookmarksId200TagsItemUpdatedAt;
+};
 
 export type GetApiBookmarksId200 = {
   id: string;
@@ -180,6 +218,7 @@ export type GetApiBookmarksId200 = {
   status: GetApiBookmarksId200Status;
   createdAt: GetApiBookmarksId200CreatedAt;
   updatedAt: GetApiBookmarksId200UpdatedAt;
+  tags?: GetApiBookmarksId200TagsItem[];
 };
 
 export type PatchApiBookmarksIdBodyStatus =
@@ -221,6 +260,18 @@ export type PatchApiBookmarksId200CreatedAt = string | string;
 
 export type PatchApiBookmarksId200UpdatedAt = string | string;
 
+export type PatchApiBookmarksId200TagsItemCreatedAt = string | string;
+
+export type PatchApiBookmarksId200TagsItemUpdatedAt = string | string;
+
+export type PatchApiBookmarksId200TagsItem = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: PatchApiBookmarksId200TagsItemCreatedAt;
+  updatedAt: PatchApiBookmarksId200TagsItemUpdatedAt;
+};
+
 export type PatchApiBookmarksId200 = {
   id: string;
   userId: string;
@@ -238,6 +289,7 @@ export type PatchApiBookmarksId200 = {
   status: PatchApiBookmarksId200Status;
   createdAt: PatchApiBookmarksId200CreatedAt;
   updatedAt: PatchApiBookmarksId200UpdatedAt;
+  tags?: PatchApiBookmarksId200TagsItem[];
 };
 
 export type DeleteApiBookmarksId200Status =
@@ -253,6 +305,18 @@ export const DeleteApiBookmarksId200Status = {
 export type DeleteApiBookmarksId200CreatedAt = string | string;
 
 export type DeleteApiBookmarksId200UpdatedAt = string | string;
+
+export type DeleteApiBookmarksId200TagsItemCreatedAt = string | string;
+
+export type DeleteApiBookmarksId200TagsItemUpdatedAt = string | string;
+
+export type DeleteApiBookmarksId200TagsItem = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: DeleteApiBookmarksId200TagsItemCreatedAt;
+  updatedAt: DeleteApiBookmarksId200TagsItemUpdatedAt;
+};
 
 export type DeleteApiBookmarksId200 = {
   id: string;
@@ -271,4 +335,103 @@ export type DeleteApiBookmarksId200 = {
   status: DeleteApiBookmarksId200Status;
   createdAt: DeleteApiBookmarksId200CreatedAt;
   updatedAt: DeleteApiBookmarksId200UpdatedAt;
+  tags?: DeleteApiBookmarksId200TagsItem[];
+};
+
+export type PostApiBookmarksIdSummarize200Status =
+  (typeof PostApiBookmarksIdSummarize200Status)[keyof typeof PostApiBookmarksIdSummarize200Status];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PostApiBookmarksIdSummarize200Status = {
+  processing: 'processing',
+  completed: 'completed',
+  failed: 'failed',
+} as const;
+
+export type PostApiBookmarksIdSummarize200CreatedAt = string | string;
+
+export type PostApiBookmarksIdSummarize200UpdatedAt = string | string;
+
+export type PostApiBookmarksIdSummarize200TagsItemCreatedAt = string | string;
+
+export type PostApiBookmarksIdSummarize200TagsItemUpdatedAt = string | string;
+
+export type PostApiBookmarksIdSummarize200TagsItem = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: PostApiBookmarksIdSummarize200TagsItemCreatedAt;
+  updatedAt: PostApiBookmarksIdSummarize200TagsItemUpdatedAt;
+};
+
+export type PostApiBookmarksIdSummarize200 = {
+  id: string;
+  userId: string;
+  url: string;
+  /** @minLength 1 */
+  title: string;
+  /** @nullable */
+  content?: string | null;
+  /** @nullable */
+  summary?: string | null;
+  /** @nullable */
+  ogImage?: string | null;
+  /** @nullable */
+  ogDescription?: string | null;
+  status: PostApiBookmarksIdSummarize200Status;
+  createdAt: PostApiBookmarksIdSummarize200CreatedAt;
+  updatedAt: PostApiBookmarksIdSummarize200UpdatedAt;
+  tags?: PostApiBookmarksIdSummarize200TagsItem[];
+};
+
+export type PostApiBookmarksIdGenerateTags200BookmarkStatus =
+  (typeof PostApiBookmarksIdGenerateTags200BookmarkStatus)[keyof typeof PostApiBookmarksIdGenerateTags200BookmarkStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PostApiBookmarksIdGenerateTags200BookmarkStatus = {
+  processing: 'processing',
+  completed: 'completed',
+  failed: 'failed',
+} as const;
+
+export type PostApiBookmarksIdGenerateTags200BookmarkCreatedAt = string | string;
+
+export type PostApiBookmarksIdGenerateTags200BookmarkUpdatedAt = string | string;
+
+export type PostApiBookmarksIdGenerateTags200BookmarkTagsItemCreatedAt = string | string;
+
+export type PostApiBookmarksIdGenerateTags200BookmarkTagsItemUpdatedAt = string | string;
+
+export type PostApiBookmarksIdGenerateTags200BookmarkTagsItem = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: PostApiBookmarksIdGenerateTags200BookmarkTagsItemCreatedAt;
+  updatedAt: PostApiBookmarksIdGenerateTags200BookmarkTagsItemUpdatedAt;
+};
+
+export type PostApiBookmarksIdGenerateTags200Bookmark = {
+  id: string;
+  userId: string;
+  url: string;
+  /** @minLength 1 */
+  title: string;
+  /** @nullable */
+  content?: string | null;
+  /** @nullable */
+  summary?: string | null;
+  /** @nullable */
+  ogImage?: string | null;
+  /** @nullable */
+  ogDescription?: string | null;
+  status: PostApiBookmarksIdGenerateTags200BookmarkStatus;
+  createdAt: PostApiBookmarksIdGenerateTags200BookmarkCreatedAt;
+  updatedAt: PostApiBookmarksIdGenerateTags200BookmarkUpdatedAt;
+  tags?: PostApiBookmarksIdGenerateTags200BookmarkTagsItem[];
+};
+
+export type PostApiBookmarksIdGenerateTags200 = {
+  bookmark: PostApiBookmarksIdGenerateTags200Bookmark;
+  /** Generated tags */
+  tags: string[];
 };
