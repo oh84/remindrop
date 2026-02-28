@@ -1,7 +1,11 @@
 import { eq, desc, asc, count, ilike, or, and, gte, lt, inArray, type SQL } from 'drizzle-orm';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { db } from '../../db';
 import { bookmarks, tags, bookmarkTags, type Bookmark, type NewBookmark } from '../../db/schema';
 import type { BookmarkSortBy, BookmarkOrder } from '@repo/types';
+import type * as schema from '../../db/schema';
+
+type DbClient = PostgresJsDatabase<typeof schema>;
 
 export type Tag = typeof tags.$inferSelect;
 export type BookmarkWithTags = Bookmark & { tags: Tag[] };
@@ -107,8 +111,9 @@ export const bookmarkRepository = {
     return result?.count ?? 0;
   },
 
-  async findById(id: string) {
-    const [bookmark] = await db
+  async findById(id: string, tx?: DbClient) {
+    const client = tx ?? db;
+    const [bookmark] = await client
       .select()
       .from(bookmarks)
       .where(eq(bookmarks.id, id));
@@ -120,8 +125,9 @@ export const bookmarkRepository = {
     return bookmark;
   },
 
-  async update(id: string, data: Partial<Bookmark>) {
-    const [bookmark] = await db
+  async update(id: string, data: Partial<Bookmark>, tx?: DbClient) {
+    const client = tx ?? db;
+    const [bookmark] = await client
       .update(bookmarks)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(bookmarks.id, id))
@@ -137,34 +143,34 @@ export const bookmarkRepository = {
     return bookmark;
   },
 
-  // Tag operations
-  async findOrCreateTag(userId: string, tagName: string) {
-    // First try to find existing tag
-    const [existingTag] = await db
-      .select()
-      .from(tags)
-      .where(and(eq(tags.userId, userId), eq(tags.name, tagName)));
-
-    if (existingTag) {
+  /**
+   * Find an existing tag or create a new one. Uses insert-first strategy
+   * with conflict handling to avoid race conditions.
+   */
+  async findOrCreateTag(userId: string, tagName: string, tx?: DbClient): Promise<Tag | undefined> {
+    const client = tx ?? db;
+    try {
+      const [newTag] = await client
+        .insert(tags)
+        .values({ userId, name: tagName })
+        .returning();
+      return newTag;
+    } catch {
+      const [existingTag] = await client
+        .select()
+        .from(tags)
+        .where(and(eq(tags.userId, userId), eq(tags.name, tagName)));
       return existingTag;
     }
-
-    // Create new tag
-    const [newTag] = await db
-      .insert(tags)
-      .values({ userId, name: tagName })
-      .returning();
-    return newTag;
   },
 
-  async addTagsToBookmark(bookmarkId: string, tagIds: string[]) {
+  async addTagsToBookmark(bookmarkId: string, tagIds: string[], tx?: DbClient) {
+    const client = tx ?? db;
     if (tagIds.length === 0) return;
 
-    // Remove existing tags for this bookmark first
-    await db.delete(bookmarkTags).where(eq(bookmarkTags.bookmarkId, bookmarkId));
+    await client.delete(bookmarkTags).where(eq(bookmarkTags.bookmarkId, bookmarkId));
 
-    // Add new tags
-    await db.insert(bookmarkTags).values(
+    await client.insert(bookmarkTags).values(
       tagIds.map((tagId) => ({ bookmarkId, tagId }))
     );
   },
@@ -177,5 +183,9 @@ export const bookmarkRepository = {
       .where(eq(bookmarkTags.bookmarkId, bookmarkId));
 
     return result.map((r) => r.tag);
+  },
+
+  async withTransaction<T>(fn: (tx: DbClient) => Promise<T>): Promise<T> {
+    return db.transaction(fn);
   },
 };

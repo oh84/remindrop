@@ -83,39 +83,38 @@ export const bookmarkService = {
       return null;
     }
 
-    // Use existing content or fetch from URL
     let content = bookmark.content;
     if (!content) {
       content = await aiService.fetchWebContent(bookmark.url);
-      // Store content for future use
-      await bookmarkRepository.update(id, { content });
     }
 
-    // Generate tags using AI
     const generatedTagNames = await aiService.generateTags(content);
 
-    // Save tags to database
-    const savedTagsResults = await Promise.all(
-      generatedTagNames.map((tagName) =>
-        bookmarkRepository.findOrCreateTag(userId, tagName)
-      )
-    );
+    return await bookmarkRepository.withTransaction(async (tx) => {
+      if (!bookmark.content) {
+        await bookmarkRepository.update(id, { content }, tx);
+      }
 
-    // Filter out any undefined results
-    const savedTags = savedTagsResults.filter((tag): tag is NonNullable<typeof tag> => tag != null);
+      const savedTagsResults = await Promise.all(
+        generatedTagNames.map((tagName) =>
+          bookmarkRepository.findOrCreateTag(userId, tagName, tx)
+        )
+      );
 
-    // Link tags to bookmark
-    await bookmarkRepository.addTagsToBookmark(
-      id,
-      savedTags.map((tag) => tag.id)
-    );
+      const savedTags = savedTagsResults.filter((tag): tag is NonNullable<typeof tag> => tag != null);
 
-    // Get updated bookmark
-    const updatedBookmark = await bookmarkRepository.findById(id);
+      await bookmarkRepository.addTagsToBookmark(
+        id,
+        savedTags.map((tag) => tag.id),
+        tx
+      );
 
-    return {
-      bookmark: updatedBookmark,
-      tags: savedTags.map((tag) => tag.name),
-    };
+      const updatedBookmark = await bookmarkRepository.findById(id, tx);
+
+      return {
+        bookmark: updatedBookmark,
+        tags: savedTags.map((tag) => tag.name),
+      };
+    });
   },
 };

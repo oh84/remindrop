@@ -4,7 +4,6 @@ import { bookmarkRepository, type BookmarkWithTags } from './repository';
 import { aiService } from '../ai';
 import type { Bookmark } from '../../db/schema';
 
-// Mock repository
 vi.mock('./repository', () => ({
   bookmarkRepository: {
     findManyByUserId: vi.fn(),
@@ -15,6 +14,7 @@ vi.mock('./repository', () => ({
     delete: vi.fn(),
     findOrCreateTag: vi.fn(),
     addTagsToBookmark: vi.fn(),
+    withTransaction: vi.fn(),
   },
 }));
 
@@ -55,7 +55,6 @@ describe('BookmarkService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default mock implementations
     vi.mocked(bookmarkRepository.findOrCreateTag).mockImplementation(async (userId, tagName) => ({
       id: `tag-${tagName}`,
       name: tagName,
@@ -63,6 +62,7 @@ describe('BookmarkService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     }));
+    vi.mocked(bookmarkRepository.withTransaction).mockImplementation(async (fn) => fn({} as unknown as Parameters<typeof fn>[0]));
   });
 
   describe('list', () => {
@@ -435,7 +435,8 @@ describe('BookmarkService', () => {
       expect(bookmarkRepository.findOrCreateTag).toHaveBeenCalledTimes(3);
       expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(
         mockBookmarkId,
-        expect.arrayContaining([expect.any(String)])
+        expect.arrayContaining([expect.any(String)]),
+        expect.anything()
       );
     });
 
@@ -455,7 +456,7 @@ describe('BookmarkService', () => {
 
       expect(result).toBeDefined();
       expect(aiService.fetchWebContent).toHaveBeenCalledWith(mockBookmark.url);
-      expect(bookmarkRepository.update).toHaveBeenCalledWith(mockBookmarkId, { content: mockContent });
+      expect(bookmarkRepository.update).toHaveBeenCalledWith(mockBookmarkId, { content: mockContent }, expect.anything());
       expect(aiService.generateTags).toHaveBeenCalledWith(mockContent);
     });
 
@@ -493,7 +494,7 @@ describe('BookmarkService', () => {
         tags: [],
       });
       expect(bookmarkRepository.findOrCreateTag).not.toHaveBeenCalled();
-      expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(mockBookmarkId, []);
+      expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(mockBookmarkId, [], expect.anything());
     });
 
     it('should filter out null tags', async () => {
@@ -505,14 +506,14 @@ describe('BookmarkService', () => {
       vi.mocked(aiService.generateTags).mockResolvedValue(mockTagNames);
       vi.mocked(bookmarkRepository.findOrCreateTag)
         .mockResolvedValueOnce({ id: 'tag1', name: 'Tag1', userId: mockUserId, createdAt: new Date(), updatedAt: new Date() })
-        .mockResolvedValueOnce(null as any); // Simulate null result
+        .mockResolvedValueOnce(undefined);
       vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(updatedBookmark);
 
       const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
 
       expect(result).toBeDefined();
       expect(result?.tags).toHaveLength(1); // Only Tag1 should be included
-      expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(mockBookmarkId, ['tag1']);
+      expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(mockBookmarkId, ['tag1'], expect.anything());
     });
   });
 });

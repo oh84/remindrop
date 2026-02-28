@@ -1,15 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type Anthropic from '@anthropic-ai/sdk';
 import { aiService } from './service';
 import { getAnthropicClient } from '../../lib/anthropic';
 
-// Mock Anthropic client
 vi.mock('../../lib/anthropic', () => ({
   getAnthropicClient: vi.fn(),
   CLAUDE_HAIKU_MODEL: 'claude-3-5-haiku-latest',
 }));
 
+vi.mock('dns/promises', () => ({
+  lookup: vi.fn().mockResolvedValue({ address: '93.184.216.34', family: 4 }),
+}));
+
 describe('AIService', () => {
-  const mockAnthropicClient = {
+  const mockAnthropicClient: { messages: { create: ReturnType<typeof vi.fn> } } = {
     messages: {
       create: vi.fn(),
     },
@@ -17,10 +21,14 @@ describe('AIService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getAnthropicClient).mockReturnValue(mockAnthropicClient as any);
+    vi.mocked(getAnthropicClient).mockReturnValue(mockAnthropicClient as unknown as Anthropic);
   });
 
   describe('fetchWebContent', () => {
+    const mockHeaders = new Headers({
+      'content-type': 'text/html; charset=utf-8',
+    });
+
     it('should fetch and extract text content from HTML', async () => {
       const mockUrl = 'https://example.com';
       const mockHtml = `
@@ -35,18 +43,21 @@ describe('AIService', () => {
         </html>
       `;
 
-      global.fetch = vi.fn().mockResolvedValue({
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        headers: mockHeaders,
         text: async () => mockHtml,
-      });
+      }));
 
       const result = await aiService.fetchWebContent(mockUrl);
 
-      expect(global.fetch).toHaveBeenCalledWith(mockUrl, {
+      expect(fetch).toHaveBeenCalledWith(mockUrl, {
         headers: {
           'User-Agent': 'Remindrop/1.0 (Bookmark Manager)',
           Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         },
+        redirect: 'manual',
         signal: expect.any(AbortSignal),
       });
       expect(result).toContain('Hello World');
@@ -59,11 +70,12 @@ describe('AIService', () => {
     it('should handle HTTP errors', async () => {
       const mockUrl = 'https://example.com';
 
-      global.fetch = vi.fn().mockResolvedValue({
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: false,
         status: 404,
         statusText: 'Not Found',
-      });
+        headers: mockHeaders,
+      }));
 
       await expect(aiService.fetchWebContent(mockUrl)).rejects.toThrow('Failed to fetch URL: 404 Not Found');
     });
@@ -71,11 +83,11 @@ describe('AIService', () => {
     it('should handle timeout errors', async () => {
       const mockUrl = 'https://example.com';
 
-      global.fetch = vi.fn().mockImplementation(() => {
+      vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
         return new Promise((_, reject) => {
           setTimeout(() => reject(new Error('Timeout')), 100);
         });
-      });
+      }));
 
       await expect(aiService.fetchWebContent(mockUrl)).rejects.toThrow();
     });
@@ -85,10 +97,12 @@ describe('AIService', () => {
       const longContent = 'a'.repeat(20000);
       const mockHtml = `<html><body><p>${longContent}</p></body></html>`;
 
-      global.fetch = vi.fn().mockResolvedValue({
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        headers: mockHeaders,
         text: async () => mockHtml,
-      });
+      }));
 
       const result = await aiService.fetchWebContent(mockUrl);
 
@@ -99,16 +113,48 @@ describe('AIService', () => {
       const mockUrl = 'https://example.com';
       const mockHtml = '<html><body><p>Hello &amp; World &lt;test&gt; &quot;quote&quot;</p></body></html>';
 
-      global.fetch = vi.fn().mockResolvedValue({
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        headers: mockHeaders,
         text: async () => mockHtml,
-      });
+      }));
 
       const result = await aiService.fetchWebContent(mockUrl);
 
       expect(result).toContain('Hello & World');
       expect(result).toContain('<test>');
       expect(result).toContain('"quote"');
+    });
+
+    it('should block non-http(s) URL schemes', async () => {
+      await expect(aiService.fetchWebContent('file:///etc/passwd')).rejects.toThrow('Blocked URL scheme');
+      await expect(aiService.fetchWebContent('ftp://example.com/file')).rejects.toThrow('Blocked URL scheme');
+    });
+
+    it('should block redirects', async () => {
+      const mockUrl = 'https://example.com';
+
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: false,
+        status: 302,
+        headers: new Headers({ location: 'http://localhost/admin' }),
+      }));
+
+      await expect(aiService.fetchWebContent(mockUrl)).rejects.toThrow('Redirects are not followed');
+    });
+
+    it('should reject non-HTML content types', async () => {
+      const mockUrl = 'https://example.com/image.png';
+
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'image/png' }),
+        text: async () => '',
+      }));
+
+      await expect(aiService.fetchWebContent(mockUrl)).rejects.toThrow('Unexpected content type');
     });
   });
 
