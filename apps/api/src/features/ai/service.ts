@@ -1,4 +1,5 @@
 import { lookup } from 'dns/promises';
+import { Agent, fetch as undiciFetch } from 'undici';
 import { getAnthropicClient, CLAUDE_HAIKU_MODEL } from '../../lib/anthropic';
 import { buildSummarizePrompt, buildGenerateTagsPrompt } from './prompts';
 
@@ -24,11 +25,17 @@ function isPrivateIp(ip: string): boolean {
   return PRIVATE_IP_RANGES.some((range) => range.test(ip));
 }
 
+interface ResolvedAddress {
+  address: string;
+  family: 4 | 6;
+}
+
 /**
- * Validate URL for SSRF prevention: scheme must be http/https,
- * resolved IP must not be in private/loopback ranges.
+ * Validate URL for SSRF prevention and resolve DNS once.
+ * Returns the resolved IP so the caller can pin the connection to it,
+ * preventing DNS rebinding attacks.
  */
-async function validateUrl(url: string): Promise<void> {
+async function validateAndResolveUrl(url: string): Promise<ResolvedAddress> {
   const parsed = new URL(url);
 
   if (!ALLOWED_SCHEMES.has(parsed.protocol)) {
@@ -42,10 +49,11 @@ async function validateUrl(url: string): Promise<void> {
   }
 
   try {
-    const { address } = await lookup(hostname);
+    const { address, family } = await lookup(hostname);
     if (isPrivateIp(address)) {
       throw new Error('Blocked request to private IP address');
     }
+    return { address, family: family as 4 | 6 };
   } catch (error) {
     if (error instanceof Error && error.message.startsWith('Blocked')) {
       throw error;
@@ -56,17 +64,28 @@ async function validateUrl(url: string): Promise<void> {
 
 /**
  * Fetch webpage content from URL with SSRF protection.
+ * Uses the pre-resolved IP via a pinned undici Agent to prevent
+ * DNS rebinding (TOCTOU) attacks.
  */
 export async function fetchWebContent(url: string): Promise<string> {
-  await validateUrl(url);
+  const resolved = await validateAndResolveUrl(url);
 
-  const response = await fetch(url, {
+  const dispatcher = new Agent({
+    connect: {
+      lookup: (_hostname, _options, callback) => {
+        callback(null, resolved.address, resolved.family);
+      },
+    },
+  });
+
+  const response = await undiciFetch(url, {
     headers: {
       'User-Agent': 'Remindrop/1.0 (Bookmark Manager)',
       Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     },
     redirect: 'manual',
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    dispatcher,
   });
 
   if (response.status >= 300 && response.status < 400) {

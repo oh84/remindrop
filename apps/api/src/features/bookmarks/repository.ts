@@ -166,10 +166,11 @@ export const bookmarkRepository = {
 
   async addTagsToBookmark(bookmarkId: string, tagIds: string[], tx?: DbClient) {
     const client = tx ?? db;
-    const uniqueTagIds = [...new Set(tagIds)];
-    if (uniqueTagIds.length === 0) return;
 
     await client.delete(bookmarkTags).where(eq(bookmarkTags.bookmarkId, bookmarkId));
+
+    const uniqueTagIds = [...new Set(tagIds)];
+    if (uniqueTagIds.length === 0) return;
 
     await client.insert(bookmarkTags).values(
       uniqueTagIds.map((tagId) => ({ bookmarkId, tagId }))

@@ -8,9 +8,13 @@ import {
   BookmarkOrderSchema,
 } from '@repo/types';
 import { AuthVariables } from '../../middleware/auth';
+import { aiRateLimitMiddleware } from '../../middleware/rate-limit';
 import { bookmarkService } from './service';
 
 const app = new OpenAPIHono<{ Variables: AuthVariables }>();
+
+app.use('/:id/summarize', aiRateLimitMiddleware);
+app.use('/:id/generate-tags', aiRateLimitMiddleware);
 
 // List Bookmarks
 const listBookmarkRoute = createRoute({
