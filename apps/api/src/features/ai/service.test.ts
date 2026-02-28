@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type Anthropic from '@anthropic-ai/sdk';
+import { lookup } from 'dns/promises';
 import { aiService } from './service';
 import { getAnthropicClient } from '../../lib/anthropic';
 
@@ -162,6 +163,34 @@ describe('AIService', () => {
       });
 
       await expect(aiService.fetchWebContent(mockUrl)).rejects.toThrow('Unexpected content type');
+    });
+
+    it('should block IPv4-mapped IPv6 loopback addresses', async () => {
+      vi.mocked(lookup).mockResolvedValueOnce({ address: '::ffff:127.0.0.1', family: 6 });
+
+      await expect(aiService.fetchWebContent('https://example.com')).rejects.toThrow(
+        'Blocked request to private IP address'
+      );
+    });
+
+    it('should reject large streamed responses without content-length header', async () => {
+      const mockUrl = 'https://example.com';
+      const oversizedChunk = new TextEncoder().encode('a'.repeat(6 * 1024 * 1024));
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(oversizedChunk);
+            controller.close();
+          },
+        }),
+        text: async () => '',
+      });
+
+      await expect(aiService.fetchWebContent(mockUrl)).rejects.toThrow('Response too large');
     });
   });
 

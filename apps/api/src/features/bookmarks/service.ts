@@ -110,6 +110,9 @@ export const bookmarkService = {
       );
 
       const updatedBookmark = await bookmarkRepository.findById(id, tx);
+      if (!updatedBookmark) {
+        return null;
+      }
 
       return {
         bookmark: updatedBookmark,

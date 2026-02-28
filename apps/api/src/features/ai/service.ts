@@ -1,5 +1,5 @@
 import { lookup } from 'dns/promises';
-import { Agent, fetch as undiciFetch } from 'undici';
+import { Agent, fetch as undiciFetch, type Response as UndiciResponse } from 'undici';
 import { getAnthropicClient, CLAUDE_HAIKU_MODEL } from '../../lib/anthropic';
 import { buildSummarizePrompt, buildGenerateTagsPrompt } from './prompts';
 
@@ -11,11 +11,24 @@ const ALLOWED_SCHEMES = new Set(['http:', 'https:']);
 const PRIVATE_IP_RANGES = [
   /^127\./,
   /^10\./,
+  /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
   /^172\.(1[6-9]|2\d|3[01])\./,
   /^192\.168\./,
   /^169\.254\./,
   /^0\./,
+  /^198\.(1[89])\./,
+  /^2(2[4-9]|3\d)\./,
   /^::1$/,
+  /^::$/,
+  /^::ffff:127\./i,
+  /^::ffff:10\./i,
+  /^::ffff:100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./i,
+  /^::ffff:172\.(1[6-9]|2\d|3[01])\./i,
+  /^::ffff:192\.168\./i,
+  /^::ffff:169\.254\./i,
+  /^::ffff:0\./i,
+  /^::ffff:198\.(1[89])\./i,
+  /^::ffff:2(2[4-9]|3\d)\./i,
   /^fc00:/i,
   /^fd/i,
   /^fe80:/i,
@@ -23,6 +36,38 @@ const PRIVATE_IP_RANGES = [
 
 function isPrivateIp(ip: string): boolean {
   return PRIVATE_IP_RANGES.some((range) => range.test(ip));
+}
+
+async function readResponseTextWithLimit(response: UndiciResponse, maxBytes: number): Promise<string> {
+  if (!response.body) {
+    const text = await response.text();
+    const byteLength = new TextEncoder().encode(text).byteLength;
+    if (byteLength > maxBytes) {
+      throw new Error('Response too large');
+    }
+    return text;
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let totalBytes = 0;
+  let text = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      await reader.cancel();
+      throw new Error('Response too large');
+    }
+
+    text += decoder.decode(value, { stream: true });
+  }
+
+  text += decoder.decode();
+  return text;
 }
 
 interface ResolvedAddress {
@@ -106,7 +151,7 @@ export async function fetchWebContent(url: string): Promise<string> {
     throw new Error('Response too large');
   }
 
-  const html = await response.text();
+  const html = await readResponseTextWithLimit(response, MAX_RESPONSE_SIZE);
   const textContent = extractTextFromHtml(html);
   return textContent.slice(0, MAX_CONTENT_LENGTH);
 }

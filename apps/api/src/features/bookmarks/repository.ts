@@ -145,7 +145,7 @@ export const bookmarkRepository = {
 
   /**
    * Find an existing tag or create a new one. Uses insert-first strategy
-   * with conflict handling to avoid race conditions.
+   * with fallback SELECT only on unique constraint violations (PG 23505).
    */
   async findOrCreateTag(userId: string, tagName: string, tx?: DbClient): Promise<Tag | undefined> {
     const client = tx ?? db;
@@ -155,7 +155,12 @@ export const bookmarkRepository = {
         .values({ userId, name: tagName })
         .returning();
       return newTag;
-    } catch {
+    } catch (error) {
+      const isUniqueViolation =
+        error instanceof Error && 'code' in error && (error as Record<string, unknown>).code === '23505';
+      if (!isUniqueViolation) {
+        throw error;
+      }
       const [existingTag] = await client
         .select()
         .from(tags)

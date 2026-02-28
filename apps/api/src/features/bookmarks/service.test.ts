@@ -515,5 +515,17 @@ describe('BookmarkService', () => {
       expect(result?.tags).toHaveLength(1); // Only Tag1 should be included
       expect(bookmarkRepository.addTagsToBookmark).toHaveBeenCalledWith(mockBookmarkId, ['tag1'], expect.anything());
     });
+
+    it('should return null when bookmark is missing inside transaction', async () => {
+      const mockBookmark = createMockBookmark({ content: 'Some content' });
+
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(mockBookmark);
+      vi.mocked(aiService.generateTags).mockResolvedValue(['Tag1']);
+      vi.mocked(bookmarkRepository.findById).mockResolvedValueOnce(undefined);
+
+      const result = await bookmarkService.generateTags(mockBookmarkId, mockUserId);
+
+      expect(result).toBeNull();
+    });
   });
 });
