@@ -100,14 +100,14 @@ export async function fetchWebContent(url: string): Promise<string> {
 function extractTextFromHtml(html: string): string {
   let text = html;
 
-  const dangerousTagPattern = /<script\b[^>]*>[\s\S]*?<\/script\s*>/gi;
+  const dangerousTagPattern = /<script\b[^>]*>[\s\S]*?<\/script[^>]*>/gi;
   let prev = '';
   while (text !== prev) {
     prev = text;
     text = text.replace(dangerousTagPattern, '');
   }
 
-  const styleTagPattern = /<style\b[^>]*>[\s\S]*?<\/style\s*>/gi;
+  const styleTagPattern = /<style\b[^>]*>[\s\S]*?<\/style[^>]*>/gi;
   prev = '';
   while (text !== prev) {
     prev = text;
