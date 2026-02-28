@@ -123,37 +123,41 @@ export async function fetchWebContent(url: string): Promise<string> {
     },
   });
 
-  const response = await undiciFetch(url, {
-    headers: {
-      'User-Agent': 'Remindrop/1.0 (Bookmark Manager)',
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    },
-    redirect: 'manual',
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    dispatcher,
-  });
+  try {
+    const response = await undiciFetch(url, {
+      headers: {
+        'User-Agent': 'Remindrop/1.0 (Bookmark Manager)',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      redirect: 'manual',
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      dispatcher,
+    });
 
-  if (response.status >= 300 && response.status < 400) {
-    throw new Error('Redirects are not followed for security reasons');
+    if (response.status >= 300 && response.status < 400) {
+      throw new Error('Redirects are not followed for security reasons');
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.startsWith('text/html') && !contentType.startsWith('application/xhtml+xml')) {
+      throw new Error(`Unexpected content type: ${contentType}`);
+    }
+
+    const contentLength = response.headers.get('content-length');
+    if (contentLength && parseInt(contentLength, 10) > MAX_RESPONSE_SIZE) {
+      throw new Error('Response too large');
+    }
+
+    const html = await readResponseTextWithLimit(response, MAX_RESPONSE_SIZE);
+    const textContent = extractTextFromHtml(html);
+    return textContent.slice(0, MAX_CONTENT_LENGTH);
+  } finally {
+    await dispatcher.close();
   }
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`);
-  }
-
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.startsWith('text/html') && !contentType.startsWith('application/xhtml+xml')) {
-    throw new Error(`Unexpected content type: ${contentType}`);
-  }
-
-  const contentLength = response.headers.get('content-length');
-  if (contentLength && parseInt(contentLength, 10) > MAX_RESPONSE_SIZE) {
-    throw new Error('Response too large');
-  }
-
-  const html = await readResponseTextWithLimit(response, MAX_RESPONSE_SIZE);
-  const textContent = extractTextFromHtml(html);
-  return textContent.slice(0, MAX_CONTENT_LENGTH);
 }
 
 /**
