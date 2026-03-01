@@ -144,29 +144,26 @@ export const bookmarkRepository = {
   },
 
   /**
-   * Find an existing tag or create a new one. Uses insert-first strategy
-   * with fallback SELECT only on unique constraint violations (PG 23505).
+   * Find an existing tag or create a new one. Uses INSERT...ON CONFLICT DO NOTHING
+   * to avoid transaction-poisoning errors when called within a transaction.
    */
   async findOrCreateTag(userId: string, tagName: string, tx?: DbClient): Promise<Tag | undefined> {
     const client = tx ?? db;
-    try {
-      const [newTag] = await client
-        .insert(tags)
-        .values({ userId, name: tagName })
-        .returning();
+    const [newTag] = await client
+      .insert(tags)
+      .values({ userId, name: tagName })
+      .onConflictDoNothing({ target: [tags.userId, tags.name] })
+      .returning();
+    
+    if (newTag) {
       return newTag;
-    } catch (error) {
-      const isUniqueViolation =
-        error instanceof Error && 'code' in error && (error as Record<string, unknown>).code === '23505';
-      if (!isUniqueViolation) {
-        throw error;
-      }
-      const [existingTag] = await client
-        .select()
-        .from(tags)
-        .where(and(eq(tags.userId, userId), eq(tags.name, tagName)));
-      return existingTag;
     }
+    
+    const [existingTag] = await client
+      .select()
+      .from(tags)
+      .where(and(eq(tags.userId, userId), eq(tags.name, tagName)));
+    return existingTag;
   },
 
   async addTagsToBookmark(bookmarkId: string, tagIds: string[], tx?: DbClient) {
@@ -180,16 +177,6 @@ export const bookmarkRepository = {
     await client.insert(bookmarkTags).values(
       uniqueTagIds.map((tagId) => ({ bookmarkId, tagId }))
     );
-  },
-
-  async getBookmarkTags(bookmarkId: string) {
-    const result = await db
-      .select({ tag: tags })
-      .from(bookmarkTags)
-      .innerJoin(tags, eq(bookmarkTags.tagId, tags.id))
-      .where(eq(bookmarkTags.bookmarkId, bookmarkId));
-
-    return result.map((r) => r.tag);
   },
 
   async withTransaction<T>(fn: (tx: DbClient) => Promise<T>): Promise<T> {

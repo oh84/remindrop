@@ -29,9 +29,9 @@ export const GENERATE_TAGS_PROMPT = `あなたはブックマークのタグ付�
 タグ（カンマ区切りで出力してください）:`;
 
 export function buildSummarizePrompt(content: string): string {
-  return SUMMARIZE_PROMPT.replace('{content}', content);
+  return SUMMARIZE_PROMPT.replace('{content}', () => content);
 }
 
 export function buildGenerateTagsPrompt(content: string): string {
-  return GENERATE_TAGS_PROMPT.replace('{content}', content);
+  return GENERATE_TAGS_PROMPT.replace('{content}', () => content);
 }

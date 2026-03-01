@@ -1,5 +1,5 @@
 // Bookmark schema
-import { pgTable, uuid, text, timestamp, pgEnum, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, pgEnum, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { users } from './auth';
 
 export const bookmarkStatusEnum = pgEnum('bookmark_status', [
@@ -48,7 +48,7 @@ export const tags = pgTable(
   },
   (table) => [
     index('tags_user_id_idx').on(table.userId),
-    index('tags_user_id_name_idx').on(table.userId, table.name),
+    uniqueIndex('tags_user_id_name_idx').on(table.userId, table.name),
   ]
 );
 

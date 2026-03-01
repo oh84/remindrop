@@ -102,5 +102,5 @@ CREATE INDEX "bookmarks_user_id_idx" ON "bookmarks" USING btree ("user_id");--> 
 CREATE INDEX "bookmarks_user_id_created_at_idx" ON "bookmarks" USING btree ("user_id","created_at");--> statement-breakpoint
 CREATE INDEX "bookmarks_status_idx" ON "bookmarks" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "tags_user_id_idx" ON "tags" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "tags_user_id_name_idx" ON "tags" USING btree ("user_id","name");--> statement-breakpoint
+CREATE UNIQUE INDEX "tags_user_id_name_idx" ON "tags" USING btree ("user_id","name");--> statement-breakpoint
 CREATE INDEX "user_settings_user_id_idx" ON "user_settings" USING btree ("user_id");
