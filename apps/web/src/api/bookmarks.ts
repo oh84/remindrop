@@ -30,6 +30,8 @@ import type {
   PatchApiBookmarksIdBody,
   PostApiBookmarks201,
   PostApiBookmarksBody,
+  PostApiBookmarksIdGenerateTags200,
+  PostApiBookmarksIdSummarize200,
 } from './generated.schemas';
 
 import { customInstance } from './mutator/custom-instance';
@@ -519,6 +521,168 @@ export const useDeleteApiBookmarksId = <TError = void, TContext = unknown>(
   TContext
 > => {
   const mutationOptions = getDeleteApiBookmarksIdMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Fetches the webpage content and generates a summary using Claude Haiku
+ * @summary Generate AI summary for a bookmark
+ */
+export const postApiBookmarksIdSummarize = (
+  id: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<PostApiBookmarksIdSummarize200>(
+    { url: `/api/bookmarks/${id}/summarize`, method: 'POST', signal },
+    options
+  );
+};
+
+export const getPostApiBookmarksIdSummarizeMutationOptions = <
+  TError = void,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiBookmarksIdSummarize>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiBookmarksIdSummarize>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['postApiBookmarksIdSummarize'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiBookmarksIdSummarize>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return postApiBookmarksIdSummarize(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiBookmarksIdSummarizeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiBookmarksIdSummarize>>
+>;
+
+export type PostApiBookmarksIdSummarizeMutationError = void;
+
+/**
+ * @summary Generate AI summary for a bookmark
+ */
+export const usePostApiBookmarksIdSummarize = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiBookmarksIdSummarize>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiBookmarksIdSummarize>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getPostApiBookmarksIdSummarizeMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Generates relevant tags for the bookmark content using Claude Haiku
+ * @summary Generate AI tags for a bookmark
+ */
+export const postApiBookmarksIdGenerateTags = (
+  id: string,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<PostApiBookmarksIdGenerateTags200>(
+    { url: `/api/bookmarks/${id}/generate-tags`, method: 'POST', signal },
+    options
+  );
+};
+
+export const getPostApiBookmarksIdGenerateTagsMutationOptions = <
+  TError = void,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof postApiBookmarksIdGenerateTags>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof postApiBookmarksIdGenerateTags>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ['postApiBookmarksIdGenerateTags'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof postApiBookmarksIdGenerateTags>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return postApiBookmarksIdGenerateTags(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiBookmarksIdGenerateTagsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof postApiBookmarksIdGenerateTags>>
+>;
+
+export type PostApiBookmarksIdGenerateTagsMutationError = void;
+
+/**
+ * @summary Generate AI tags for a bookmark
+ */
+export const usePostApiBookmarksIdGenerateTags = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof postApiBookmarksIdGenerateTags>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof postApiBookmarksIdGenerateTags>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getPostApiBookmarksIdGenerateTagsMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

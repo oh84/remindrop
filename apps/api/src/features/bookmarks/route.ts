@@ -8,9 +8,13 @@ import {
   BookmarkOrderSchema,
 } from '@repo/types';
 import { AuthVariables } from '../../middleware/auth';
+import { aiRateLimitMiddleware } from '../../middleware/rate-limit';
 import { bookmarkService } from './service';
 
 const app = new OpenAPIHono<{ Variables: AuthVariables }>();
+
+app.use('/:id/summarize', aiRateLimitMiddleware);
+app.use('/:id/generate-tags', aiRateLimitMiddleware);
 
 // List Bookmarks
 const listBookmarkRoute = createRoute({
@@ -263,6 +267,120 @@ app.openapi(deleteBookmarkRoute, async (c) => {
   }
 
   return c.json(bookmark);
+});
+
+// Summarize Bookmark
+const summarizeBookmarkRoute = createRoute({
+  method: 'post',
+  path: '/{id}/summarize',
+  tags: ['Bookmarks'],
+  summary: 'Generate AI summary for a bookmark',
+  description: 'Fetches the webpage content and generates a summary using Claude Haiku',
+  request: {
+    params: z.object({
+      id: z.uuid().openapi({
+        param: {
+          name: 'id',
+          in: 'path',
+          required: true,
+        },
+        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'Bookmark ID',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: BookmarkSchema,
+        },
+      },
+      description: 'Bookmark with generated summary',
+    },
+    404: {
+      description: 'Bookmark not found',
+    },
+    500: {
+      description: 'Failed to generate summary',
+    },
+  },
+});
+
+app.openapi(summarizeBookmarkRoute, async (c) => {
+  const user = c.get('user');
+  const { id } = c.req.valid('param');
+
+  try {
+    const bookmark = await bookmarkService.summarize(id, user.id);
+    if (!bookmark) {
+      return c.json({ error: 'Bookmark not found' }, 404);
+    }
+    return c.json(bookmark);
+  } catch (error) {
+    console.error('Failed to summarize bookmark:', error);
+    return c.json({ error: '要約の生成に失敗しました' }, 500);
+  }
+});
+
+// Generate Tags for Bookmark
+const generateTagsRoute = createRoute({
+  method: 'post',
+  path: '/{id}/generate-tags',
+  tags: ['Bookmarks'],
+  summary: 'Generate AI tags for a bookmark',
+  description: 'Generates relevant tags for the bookmark content using Claude Haiku',
+  request: {
+    params: z.object({
+      id: z.uuid().openapi({
+        param: {
+          name: 'id',
+          in: 'path',
+          required: true,
+        },
+        example: '123e4567-e89b-12d3-a456-426614174000',
+        description: 'Bookmark ID',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            bookmark: BookmarkSchema,
+            tags: z.array(z.string()).openapi({
+              example: ['JavaScript', 'React', 'Frontend'],
+              description: 'Generated tags',
+            }),
+          }),
+        },
+      },
+      description: 'Generated tags for the bookmark',
+    },
+    404: {
+      description: 'Bookmark not found',
+    },
+    500: {
+      description: 'Failed to generate tags',
+    },
+  },
+});
+
+app.openapi(generateTagsRoute, async (c) => {
+  const user = c.get('user');
+  const { id } = c.req.valid('param');
+
+  try {
+    const result = await bookmarkService.generateTags(id, user.id);
+    if (!result) {
+      return c.json({ error: 'Bookmark not found' }, 404);
+    }
+    return c.json(result);
+  } catch (error) {
+    console.error('Failed to generate tags:', error);
+    return c.json({ error: 'タグの生成に失敗しました' }, 500);
+  }
 });
 
 export default app;

@@ -156,30 +156,30 @@
 
 ---
 
-## Phase 4: AI統合
+## Phase 4: AI統合 ✅
 
-### Task 4.1: Anthropic API統合
-- [ ] Anthropic SDK セットアップ
-- [ ] APIクライアント作成
-- [ ] エラーハンドリング
-- [ ] レート制限管理
+### Task 4.1: Anthropic API統合 ✅
+- [x] Anthropic SDK セットアップ
+- [x] APIクライアント作成
+- [x] エラーハンドリング
+- [x] レート制限管理（インメモリ、ユーザーあたり10リクエスト/時）
 
-### Task 7.2: 要約生成機能
-- [ ] 要約生成サービス実装
-- [ ] POST /api/bookmarks/:id/summarize
-- [ ] プロンプト最適化
-- [ ] 要約結果の保存
+### Task 4.2: 要約生成機能 ✅
+- [x] 要約生成サービス実装
+- [x] POST /api/bookmarks/:id/summarize
+- [x] プロンプト最適化
+- [x] 要約結果の保存
 
-### Task 7.3: タグ自動生成
-- [ ] タグ生成サービス実装
-- [ ] POST /api/bookmarks/:id/generate-tags
-- [ ] タグの自動適用
+### Task 4.3: タグ自動生成 ✅
+- [x] タグ生成サービス実装
+- [x] POST /api/bookmarks/:id/generate-tags
+- [x] タグの自動適用
 
-### Task 7.4: UI統合
-- [ ] 要約ボタン追加
-- [ ] タグ生成ボタン追加
-- [ ] ローディング状態
-- [ ] エラー表示
+### Task 4.4: UI統合 ✅
+- [x] 要約ボタン追加
+- [x] タグ生成ボタン追加
+- [x] ローディング状態
+- [x] エラー表示
 
 ---
 

@@ -15,6 +15,9 @@ const envSchema = z.object({
 
   // Web Application
   WEB_URL: z.url(),
+
+  // Anthropic API (optional - required only for AI features)
+  ANTHROPIC_API_KEY: z.string().optional(),
 });
 
 // 起動時に環境変数を検証
